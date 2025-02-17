@@ -1,0 +1,28 @@
+cmake_minimum_required(VERSION 3.30)
+
+project(DistinctElements
+        VERSION 1.0
+        LANGUAGES CXX CUDA
+)
+
+find_package(CUDAToolkit REQUIRED)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CUDA_ARCHITECTURES 75 80 86 90)
+
+# Relink to installed libs on install
+set( CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib" )
+set( CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE )
+
+
+link_directories( ${CMAKE_BINARY_DIR}/lib )
+
+set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib )
+set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib )
+set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin )
+set( CONFIG_DIRECTORY ${CMAKE_INSTALL_PREFIX}/etc )
+set( INCLUDE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/include )
+set( LIBRARY_DIRECTORY ${CMAKE_INSTALL_PREFIX}/lib )
+
+add_subdirectory(src)
+add_subdirectory(UnitTests)
