@@ -8,7 +8,7 @@
 #include "Material/Material.hpp"
 #include "Tools/Quaternion.hpp"
 
-class Particle :public Shape
+class Particle final :public Shape
 {
 public:
     //TypeName("Particle");
@@ -25,7 +25,7 @@ public:
     Particle(std::unique_ptr<Shape> shape, std::shared_ptr<Material> material);
 
     // Other methods remain the same...
-    ~Particle();
+    ~Particle() override;
 
     void setMaterial(Material& material);
 

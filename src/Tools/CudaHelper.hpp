@@ -21,6 +21,7 @@ void deviceToHost(const T* devPtr, const int size, T** hostPtr)
     cudaDeviceSynchronize();
     GET_CUDA_ERROR("cudaDeviceSynchronize() deviceToHost");
 }
+
 template<typename T>
 void hostToDevice(const T* hostPtr, const int size, T** devPtr)
 {

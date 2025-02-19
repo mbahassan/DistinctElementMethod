@@ -18,7 +18,7 @@ public:
   int getId()  const { return id_; }
 
   __host__ __device__
-  void setId(const int id) { id_ = id; }
+  void setId(const unsigned int id) { id_ = id; }
 
 private:
   int id_ = 0;

@@ -1,20 +1,22 @@
 #include <iostream>
 #include <vector>
 #include "Tools/CudaHelper.hpp"
-#include "Particle/Particle.hpp"
+#include <Particle/Particle.hpp>
 
-__global__ void kernel(const Particle* particle, const int N)
+__global__ void kernel( Particle* particle, const int N)
 {
-    unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    uint idx = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (idx < N) {
-        printf("i = %d, Particle id: %d\n",idx, particle[idx].setId(idx));
+        particle[idx].setId(idx);
+        // printf("i = %d\n",idx);
     }
 }
 
 int main() {
+    bool active = true;
     int N = 5;
-    std::pmr::vector<Particle> particles(N);
+    std::vector<Particle> particles(N);
 
     for (int i = 0; i < N; i++) {
         particles[i].setId(i);
@@ -23,15 +25,28 @@ int main() {
     auto lang1 = "C++";
     std::cout << "Hello and welcome to " << lang1 << "!\n";
 
-    // for (int i = 1; i <= N; i++) {
-    //
-    //     std::cout << "i = " << i << std::endl;
-    // }
+    for (int i = 0; i < N; i++) {
+
+        std::cout << "i = " << i << " Id: " <<particles[i].getId() << std::endl;
+    }
+
     Particle* devParticles = nullptr;
     hostToDevice(particles.data(), N, &devParticles);
 
     kernel<<<1, N>>>(devParticles, N);
     cudaDeviceSynchronize();
+    Particle* hostParticles = nullptr;
+    deviceToHost(devParticles, N, &hostParticles);
+
+    for (int i = 0; i < N; i++) {
+
+        std::cout << "i = " << i << " Id: " <<hostParticles[i].getId() << std::endl;
+    }
+
+    cudaFree(devParticles);
+    free(hostParticles);
+
+    cudaDeviceReset();
 
     return 0;
 }
