@@ -1,31 +1,34 @@
 
+// includes, system
 #include <iostream>
 
-#include "Insertion/InsertionCpu.h"
-#include "Particle/Particle.hpp"
+// Required to include CUDA vector types
+#include <cuda_runtime.h>
+#include <vector>
 
-int main() {
+#include "GpuClass.cuh"
 
-    Insertion system;
 
-    // Create materials and shapes
-    Material glass{
-            /* parameters */};
-    CylinderShape cylinder(/* parameters */);
+int
+main(int argc, char **argv)
+{
+    int N = 10;
+    std::vector<Particle> particle(N);
 
-    // Initialize particles in a grid
-    float3 boxMin = make_float3(-5.0f, -5.0f, -5.0f);
-    float3 boxMax = make_float3(5.0f, 5.0f, 5.0f);
-    float spacing = 1.0f;
-    int numParticles = 1000;
+    for(int i = 0; i < N; i++)
+    {
+        particle[i].setId(i);
+    }
 
-    // Choose either grid or random initialization
-    auto particles = system.initializeGridParticles(numParticles, glass, cylinder,
-                                                  boxMin, boxMax, spacing);
-    // OR
-    auto particles = system.initializeRandomParticles(numParticles, glass, cylinder,
-                                                    boxMin, boxMax, spacing);
+    const Particle* devParticle =  particle.data();
+    GpuClass gpu(devParticle, N);
+    gpu.printHellow();
 
-    return 0;
+    // cudaDeviceReset causes the driver to clean up all state. While
+    // not mandatory in normal operation, it is good practice.  It is also
+    // needed to ensure correct operation when the application is being
+    // profiled. Calling cudaDeviceReset causes all profile data to be
+    // flushed before the application exits
+    cudaDeviceReset();
+    // exit(bTestResult ? EXIT_SUCCESS : EXIT_FAILURE);
 }
-
