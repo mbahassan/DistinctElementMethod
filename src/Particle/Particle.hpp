@@ -2,34 +2,29 @@
 #define PARTICLE_LIBRARY_H
 
 #include <cuda_runtime.h>
-#include <memory>
 
-#include "Particle/Shape/Shape.hpp"
+
 #include "Material/Material.hpp"
+#include "Shape/Sphere/Sphere.hpp"
 #include "Tools/Quaternion.hpp"
 
-class Particle final :public Shape
+class Particle final :public Material, public Sphere
 {
 public:
-    //TypeName("Particle");
 
     Particle();
 
-    Particle(Material& material, Shape& shape);
+    Particle(const Material& material, const Sphere& shape);
 
     Particle(const Particle &);
 
-    Particle(Material& material, Shape& shape, float3 position, float3 velocity);
+    Particle(const Material& material, Sphere& shape);
 
-    // Constructors
-    Particle(std::unique_ptr<Shape> shape, std::shared_ptr<Material> material);
+    Particle( Particle &);
 
     // Other methods remain the same...
-    ~Particle() override;
+    ~Particle() = default;
 
-    void setMaterial(Material& material);
-
-    void setShape(Shape& shape);
 
     // Orientation-specific methods
     void setOrientation(const Quaternion& q) { orientation = q; }
@@ -38,32 +33,27 @@ public:
 
     void setVelocity(float3 velocity);
 
-    float3 getPosition();
+    float3 getPosition() const;
 
-    float3 getVelocity();
+    float3 getVelocity() const;
 
     Quaternion getOrientation() const { return orientation; }
 
     float3 getAxisDirection() const; // Returns the current axis direction of the particle
+
 private:
-
-    /// Material for the Particle
-    std::shared_ptr<Material> material_;
-
-    /// Shape of the Particle [e.g. Sphere, Cylinder, or from mesh]
-    std::unique_ptr<Shape> shape;
 
     float3 position_ {0.f,0.f,0.f};      // Position in 3D space
 
     float3 velocity_ {0.f,0.f,0.f};      // Linear velocity
 
-    float3 acceleration;  // Linear acceleration
+    float3 acceleration {0.f,0.f,0.f};  // Linear acceleration
 
     Quaternion orientation; // Rotational orientation - CRUCIAL for cylinders
 
-    float3 angularVel;   // Angular velocity
+    float3 angularVel {0.f,0.f,0.f};   // Angular velocity
 
-    float3 angularAcc;   // Angular acceleration
+    float3 angularAcc {0.f,0.f,0.f};   // Angular acceleration
 };
 
 #endif //PARTICLE_LIBRARY_H

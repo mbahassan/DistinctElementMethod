@@ -14,15 +14,16 @@ public:
 
     explicit Sphere(float radius);
 
-    Sphere(Sphere& sphere);
+    Sphere(const Sphere& sphere);
 
     ~Sphere();
 
     void setRadius(float radius);
 
-    float getRadius() const;
+    float getRadius() const override;
 
     float getVolume() const;
+
 private:
   float radius_ = 0;
 };

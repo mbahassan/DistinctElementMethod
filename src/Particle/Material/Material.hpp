@@ -43,6 +43,8 @@ public:
           effectiveYoungsModulus_(other.effectiveYoungsModulus_)
     {}
 
+    virtual ~Material() = default;
+
     // Getters
     const std::string& getName() const { return name_; }
     float getDensity() const { return density_; }
