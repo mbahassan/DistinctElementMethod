@@ -3,7 +3,6 @@ set(EXE_NAME  main)
 set(SOURCES
         main.cpp
         GpuClass.cu
-        GpuClass.cuh
 )
 
 #Make the exe
@@ -23,5 +22,6 @@ target_link_libraries(${EXE_NAME}
         PUBLIC
         Particle 
         Tools
+        Base
 )
 

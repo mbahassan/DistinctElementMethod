@@ -6,9 +6,9 @@
 #define GPUCLASS_H
 
 #include <Particle/Particle.hpp>
+#include <Base/Base.cuh>
 
-
-class GpuClass
+class GpuClass: public Base
 {
 public:
     GpuClass(const Particle* particle, int size);

@@ -1,10 +1,7 @@
-set(LIB_NAME Particle)
+set(LIB_NAME Base)
 
 set(SOURCES
-        Particle.cpp
-        Material/Material.cpp
-        Shape/Shape.cpp
-        Shape/Sphere/Sphere.cpp
+        Base.cu
 )
 
 add_library( ${LIB_NAME} SHARED  ${SOURCES})

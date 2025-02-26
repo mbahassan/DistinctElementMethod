@@ -9,24 +9,22 @@
 #include <iostream>
 #include <vector>
 #include <random>
-#include "Particle/Particle.h"
+#include "Particle/Particle.hpp"
 
 class Insertion {
 public:
     Insertion() = default;
 
     // Initialize particles in a cubic grid arrangement
-    std::vector<Particle> fillGrid(int numParticles,
-                                                const Material& material,
-                                                const Shape& shape,
+    std::vector<Particle> fillGrid(std::vector<Particle>& particles,
                                                 float3 boxMin,
                                                 float3 boxMax,
                                                 float spacing) {
-        std::vector<Particle> particles;
-        particles.reserve(numParticles);
+
 
         float3 currentPos = boxMin;
         int particlesCreated = 0;
+        const unsigned numParticles = particles.size();
 
         // Calculate number of particles in each dimension
         int numPerSide = static_cast<int>(std::cbrt(numParticles));
@@ -40,16 +38,15 @@ public:
                 for(int z = 0; z < numPerSide && particlesCreated < numParticles; z++)
                 {
                     // Create particle with current position
-                    Particle particle(material, shape, currentPos, make_float3(0.0f, 0.0f, 0.0f));
-
+                    // Particle particle(material, shape, currentPos, make_float3(0.0f, 0.0f, 0.0f));
+                    particles[particlesCreated].setPosition(currentPos);
                     /// Initialize random orientation for non-spherical particles
-                    if (shape.getType() != ShapeType::Sphere)
+                    if (particles[particlesCreated].getShapeType() != Shape::SPHERE)
                     {
                         Quaternion randomOrientation = getRandomOrientation();
-                        particle.setOrientation(randomOrientation);
+                        particles[particlesCreated].setOrientation(randomOrientation);
                     }
 
-                    particles.push_back(particle);
                     particlesCreated++;
                     currentPos.z += spacing;
                 }
@@ -62,14 +59,12 @@ public:
     }
 
     // Initialize particles with random positions within a box
-    std::vector<Particle> fillRandomly(int numParticles,
-                                                  const Material& material,
-                                                  const Shape& shape,
+    std::vector<Particle> fillRandomly(std::vector<Particle> particles,
                                                   float3 boxMin,
                                                   float3 boxMax,
                                                   float minSpacing) {
-        std::vector<Particle> particles;
-        particles.reserve(numParticles);
+        // std::vector<Particle> particles;
+        // particles.reserve(numParticles);
 
         std::random_device rd;
         std::mt19937 gen(rd());
@@ -78,7 +73,7 @@ public:
         std::uniform_real_distribution<float> distZ(boxMin.z, boxMax.z);
 
         int maxAttempts = 100;  // Maximum attempts to place a particle
-
+        const size_t numParticles = particles.size();
         for(int i = 0; i < numParticles; i++)
         {
             bool validPosition = false;
@@ -90,7 +85,8 @@ public:
                 validPosition = true;
 
                 // Check distance from all existing particles
-                for(auto& particle : particles) {
+                for(auto& particle : particles)
+                {
                     float3 diff;
                     diff.x = testPos.x - particle.getPosition().x;
                     diff.y = testPos.y - particle.getPosition().y;
@@ -104,16 +100,14 @@ public:
                     }
                 }
 
-                if(validPosition) {
-                    Particle particle(material, shape, testPos, make_float3(0.0f, 0.0f, 0.0f));
-
+                if(validPosition)
+                {
+                    particles[attempts].setPosition(testPos);
                     // Initialize random orientation for non-spherical particles
-                    if (shape.getType() != ShapeType::Sphere) {
+                    if (particles[attempts].getShapeType() != Shape::SPHERE) {
                         Quaternion randomOrientation = getRandomOrientation();
-                        particle.setOrientation(randomOrientation);
+                        particles[attempts].setOrientation(randomOrientation);
                     }
-
-                    particles.push_back(particle);
                 }
                 attempts++;
             }

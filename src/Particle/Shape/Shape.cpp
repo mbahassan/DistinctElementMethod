@@ -4,9 +4,8 @@
 
 #include "Shape.hpp"
 
-Shape::Shape() = default;
 
-Shape::~Shape()= default;
+
 
 
 // int Shape::getId() const { return id_; }

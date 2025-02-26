@@ -3,11 +3,15 @@
 #include <iostream>
 #include <ostream>
 #include <cmath>
+#include <utility>
 
 
-Particle::Particle() {
-    std::cout << "Default Particle() constructor" << std::endl;
-}
+Particle::Particle()
+{}
+
+Particle::Particle(const Material& material, const Sphere& shape):
+Material(material), Sphere(shape)
+{}
 
 Particle::Particle(const Particle &particle)
 {
@@ -15,18 +19,23 @@ Particle::Particle(const Particle &particle)
     velocity_ = particle.velocity_;
 }
 
-Particle::~Particle()
+Particle::Particle(const Material& material, Sphere& shape):
+Material(material), Sphere(shape)
 {
-    std::cout << "Default Particle() destructor" << std::endl;
-};
+}
 
-float3 Particle::getPosition()
+Particle::Particle(Particle &particle)
 {
+    position_ = particle.position_;
+    velocity_ = particle.velocity_;
+}
+
+
+float3 Particle::getPosition() const {
     return position_;
 }
 
-float3 Particle::getVelocity()
-{
+float3 Particle::getVelocity() const {
     return velocity_;
 }
 
@@ -71,4 +80,5 @@ void Particle::setVelocity(const float3 velocity) {
 void Particle::setPosition(const float3 position) {
     position_ = position;
 }
+
 
