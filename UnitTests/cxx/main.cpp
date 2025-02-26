@@ -9,8 +9,7 @@
 #include "GpuClass.cuh"
 
 
-int
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
     int N = 10;
     std::vector<Particle> particle(N);
