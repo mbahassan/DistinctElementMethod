@@ -5,6 +5,7 @@ set(SOURCES
         Material/Material.cpp
         Shape/Shape.cpp
         Shape/Sphere/Sphere.cpp
+        Material/ConfigMaterial.h
 )
 
 add_library( ${LIB_NAME} SHARED  ${SOURCES})

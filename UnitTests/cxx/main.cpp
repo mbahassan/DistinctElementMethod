@@ -1,22 +1,23 @@
 
 // includes, system
-#include <iostream>
+
 
 // Required to include CUDA vector types
 #include <cuda_runtime.h>
 #include <vector>
 #include <Particle/Shape/Sphere/Sphere.hpp>
-
+#include <Particle/Config/Parser.h>
 #include "GpuClass.cuh"
 
 
 int main(int argc, char **argv)
 {
-    int N = 10;
+    auto config = Parser::getConfig("particle.json");
+
+    int N = config.numberOfParticles;
     Sphere sphere(0.1);
 
-    Material glass;
-    glass.setName("glass");
+    Material glass(config.materialConfigPath);
 
     std::vector<Particle> particle(N);
     for(int i = 0; i < N; i++)

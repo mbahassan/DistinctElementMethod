@@ -6,12 +6,28 @@
 #define MATERIAL_H
 
 #include <string>
-#include <iostream>
+#include <Particle/Config/Parser.h>
 
 class Material {
 public:
     // Constructors
     Material() = default;
+
+    explicit Material(const std::string& path)
+    {
+        const nlohmann::json data = Parser::readJson(path);
+
+        name_ = data["materialName"];
+        density_ = data["density"];
+        youngsModulus_ = data["youngsModulus"];
+        poissonRatio_ = data["poissonRatio"];
+        frictionCoeff_ = data["frictionCoeff"];
+        restitutionCoeff_ = data["restitutionCoeff"];
+        // Calculate derived properties
+        calculateShearModulus();
+        calculateEffectiveYoungsModulus();
+    }
+
 
     Material(const std::string& name,
             float density,
