@@ -4,8 +4,7 @@
 
 #include "GpuClass.cuh"
 #include "GpuClassKernel.cuh"
-
-#include <Tools//CudaHelper.hpp>
+#include <Tools/CudaHelper.hpp>
 
 GpuClass::GpuClass(const Particle* particle, const int size):
 size_(size)
@@ -21,5 +20,5 @@ GpuClass::~GpuClass()
 
 void GpuClass::printHellow() const
 {
-    kernel<<<2,10>>>(devParticle, size_);
+    kernel<<<2,threadsPerBlock>>>(devParticle, size_);
 }

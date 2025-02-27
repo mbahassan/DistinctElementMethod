@@ -18,7 +18,7 @@ struct Config
   std::string materialConfigPath;
 
 
-  /// Restarting simulation defualt yes
+  /// Restarting simulation default yes
   bool restart = true;
 };
 

@@ -29,23 +29,13 @@ public:
     // Orientation-specific methods
     void setOrientation(const Quaternion& q) { orientation = q; }
 
-    void setPosition(float3 position);
-
-    void setVelocity(float3 velocity);
-
-    float3 getPosition() const;
-
-    float3 getVelocity() const;
-
-    Quaternion getOrientation() const { return orientation; }
+    Quaternion getOrientation() const {return orientation;}
 
     float3 getAxisDirection() const; // Returns the current axis direction of the particle
 
-private:
+    float3 position {0.f,0.f,0.f};      // Position in 3D space
 
-    float3 position_ {0.f,0.f,0.f};      // Position in 3D space
-
-    float3 velocity_ {0.f,0.f,0.f};      // Linear velocity
+    float3 velocity {0.f,0.f,0.f};      // Linear velocity
 
     float3 acceleration {0.f,0.f,0.f};  // Linear acceleration
 
@@ -54,6 +44,17 @@ private:
     float3 angularVel {0.f,0.f,0.f};   // Angular velocity
 
     float3 angularAcc {0.f,0.f,0.f};   // Angular acceleration
+
+    float3 force {0.f,0.f,0.f};
+
+    float mass = getVolume() * getDensity();
+
+    float3 torque = {0.f,0.f,0.f};
+
+    float inertia= 0.f;
+private:
+
+
 };
 
 #endif //PARTICLE_LIBRARY_H

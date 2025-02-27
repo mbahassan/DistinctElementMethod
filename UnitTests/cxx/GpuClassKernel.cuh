@@ -10,7 +10,8 @@ void kernel(const Particle* devParticle, const int size)
 {
     uint idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < size) {
-        printf("particle id: %d\n", devParticle[idx].getId());
+        printf("particle id: %f %f %f\n", devParticle[idx].position.x,
+            devParticle[idx].position.y, devParticle[idx].position.z);
     }
 }
 

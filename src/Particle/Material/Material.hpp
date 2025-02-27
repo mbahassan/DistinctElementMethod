@@ -6,7 +6,7 @@
 #define MATERIAL_H
 
 #include <string>
-#include <Particle/Config/Parser.h>
+#include <Tools/Config/Parser.h>
 
 class Material {
 public:

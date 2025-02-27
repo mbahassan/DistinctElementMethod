@@ -6,7 +6,7 @@
 #include <cuda_runtime.h>
 #include <vector>
 #include <Particle/Shape/Sphere/Sphere.hpp>
-#include <Particle/Config/Parser.h>
+#include <Tools/Config/Parser.h>
 #include "GpuClass.cuh"
 
 

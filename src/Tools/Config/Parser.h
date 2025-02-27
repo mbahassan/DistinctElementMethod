@@ -8,7 +8,7 @@
 #include <regex>
 #include <fstream>
 #include <iostream>
-#include "Particle/Config/Config.h"
+#include "Tools/Config/Config.h"
 #include "Tools/nlohmann/json.hpp"
 
 class Parser

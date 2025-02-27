@@ -15,8 +15,8 @@ Material(material), Sphere(shape)
 
 Particle::Particle(const Particle &particle)
 {
-    position_ = particle.position_;
-    velocity_ = particle.velocity_;
+    position = particle.position;
+    velocity = particle.velocity;
 }
 
 Particle::Particle(const Material& material, Sphere& shape):
@@ -26,18 +26,10 @@ Material(material), Sphere(shape)
 
 Particle::Particle(Particle &particle)
 {
-    position_ = particle.position_;
-    velocity_ = particle.velocity_;
+    position = particle.position;
+    velocity = particle.velocity;
 }
 
-
-float3 Particle::getPosition() const {
-    return position_;
-}
-
-float3 Particle::getVelocity() const {
-    return velocity_;
-}
 
 float3 Particle::getAxisDirection() const
 {
@@ -71,14 +63,6 @@ float3 Particle::getAxisDirection() const
     }
 
     return rotatedAxis;
-}
-
-void Particle::setVelocity(const float3 velocity) {
-    velocity_ = velocity;
-}
-
-void Particle::setPosition(const float3 position) {
-    position_ = position;
 }
 
 
