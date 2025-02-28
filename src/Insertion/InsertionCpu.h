@@ -9,7 +9,8 @@
 #include <iostream>
 #include <vector>
 #include <random>
-#include "Particle/Particle.hpp"
+#include <Particle/Particle.hpp>
+#include <Tools/ArthmiticOperator/MathOperators.hpp>
 
 class Insertion {
 public:
@@ -20,8 +21,6 @@ public:
                                                 float3 boxMin,
                                                 float3 boxMax,
                                                 float spacing) {
-
-
         float3 currentPos = boxMin;
         int particlesCreated = 0;
         const unsigned numParticles = particles.size();
@@ -29,17 +28,26 @@ public:
         // Calculate number of particles in each dimension
         int numPerSide = static_cast<int>(std::cbrt(numParticles));
 
-        for(int x = 0; x < numPerSide && particlesCreated < numParticles; x++)
+        // Calculate balanced dimensions
+        int a = static_cast<int>(std::cbrt(numParticles));
+        int b = a, c = a;
+        while (a * b * c < numParticles) {
+            if (a <= b && a <= c) ++a;
+            else if (b <= c) ++b;
+            else ++c;
+        }
+
+        for(int x = 0; x < a && particlesCreated < numParticles; x++)
         {
             currentPos.y = boxMin.y;
-            for(int y = 0; y < numPerSide && particlesCreated < numParticles; y++)
+            for(int y = 0; y < b && particlesCreated < numParticles; y++)
             {
                 currentPos.z = boxMin.z;
-                for(int z = 0; z < numPerSide && particlesCreated < numParticles; z++)
+                for(int z = 0; z < c && particlesCreated < numParticles; z++)
                 {
                     // Create particle with current position
                     // Particle particle(material, shape, currentPos, make_float3(0.0f, 0.0f, 0.0f));
-                    particles[particlesCreated].setPosition(currentPos);
+                    particles[particlesCreated].position = (currentPos);
                     /// Initialize random orientation for non-spherical particles
                     if (particles[particlesCreated].getShapeType() != Shape::SPHERE)
                     {
@@ -87,10 +95,7 @@ public:
                 // Check distance from all existing particles
                 for(auto& particle : particles)
                 {
-                    float3 diff;
-                    diff.x = testPos.x - particle.getPosition().x;
-                    diff.y = testPos.y - particle.getPosition().y;
-                    diff.z = testPos.z - particle.getPosition().z;
+                    float3 diff = testPos - particle.position;
 
                     float distance = sqrtf(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
                     if(distance < minSpacing)
@@ -102,7 +107,7 @@ public:
 
                 if(validPosition)
                 {
-                    particles[attempts].setPosition(testPos);
+                    particles[attempts].position = (testPos);
                     // Initialize random orientation for non-spherical particles
                     if (particles[attempts].getShapeType() != Shape::SPHERE) {
                         Quaternion randomOrientation = getRandomOrientation();

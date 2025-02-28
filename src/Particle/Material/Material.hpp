@@ -6,6 +6,7 @@
 #define MATERIAL_H
 
 #include <string>
+#include <utility>
 #include <Tools/Config/Parser.h>
 
 class Material {
@@ -23,19 +24,20 @@ public:
         poissonRatio_ = data["poissonRatio"];
         frictionCoeff_ = data["frictionCoeff"];
         restitutionCoeff_ = data["restitutionCoeff"];
+
         // Calculate derived properties
         calculateShearModulus();
         calculateEffectiveYoungsModulus();
     }
 
 
-    Material(const std::string& name,
+    Material(std::string  name,
             float density,
             float youngsModulus,
             float poissonRatio,
             float frictionCoeff,
             float restitutionCoeff)
-        : name_(name),
+        : name_(std::move(name)),
           density_(density),
           youngsModulus_(youngsModulus),
           poissonRatio_(poissonRatio),
@@ -62,7 +64,7 @@ public:
     virtual ~Material() = default;
 
     // Getters
-    const std::string& getName() const { return name_; }
+    const std::string& getMaterialName() const { return name_; }
     float getDensity() const { return density_; }
     float getYoungsModulus() const { return youngsModulus_; }
     float getPoissonRatio() const { return poissonRatio_; }

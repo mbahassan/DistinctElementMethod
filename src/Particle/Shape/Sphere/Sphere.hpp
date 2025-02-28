@@ -7,6 +7,8 @@
 
 #include <Particle/Shape/Shape.hpp>
 
+#include "Tools/AABB/AABB.hpp"
+
 class Sphere :public Shape
 {
 public:
@@ -24,8 +26,10 @@ public:
 
     float getVolume() const;
 
+
 private:
-  float radius_ = 0;
+    float radius_ = 0;
+    AxisAlignedBoundingBox<float3> boundingBox_;
 };
 
 

@@ -6,12 +6,13 @@
 #define GPUCLASSKERNEL_CUH
 
 __global__
-void kernel(const Particle* devParticle, const int size)
+inline void kernel(Particle* devParticle, const int size)
 {
     uint idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < size) {
-        printf("particle id: %f %f %f\n", devParticle[idx].position.x,
-            devParticle[idx].position.y, devParticle[idx].position.z);
+        const Particle& pi = devParticle[idx];
+        printf("particle id:%d pos: (%f %f %f)\n",pi.getId(), pi.position.x,
+            pi.position.y, pi.position.z);
     }
 }
 

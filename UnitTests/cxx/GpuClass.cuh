@@ -12,6 +12,7 @@ class GpuClass: public Base
 {
 public:
     GpuClass(const Particle* particle, int size);
+
     ~GpuClass();
 
     void printHellow() const ;

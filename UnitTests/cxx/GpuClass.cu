@@ -21,4 +21,6 @@ GpuClass::~GpuClass()
 void GpuClass::printHellow() const
 {
     kernel<<<2,threadsPerBlock>>>(devParticle, size_);
+    cudaDeviceSynchronize();
+
 }

@@ -8,6 +8,7 @@
 #include <Particle/Shape/Sphere/Sphere.hpp>
 #include <Tools/Config/Parser.h>
 #include "GpuClass.cuh"
+#include "Insertion/InsertionCpu.h"
 
 
 int main(int argc, char **argv)
@@ -19,17 +20,20 @@ int main(int argc, char **argv)
 
     Material glass(config.materialConfigPath);
 
-    std::vector<Particle> particle(N);
+    std::vector<Particle> particles(N);
     for(int i = 0; i < N; i++)
     {
-        particle[i] = Particle(glass, sphere);
-        particle[i].setId(i);
-        particle[i].setRadius(i+0.1f);
+        particles[i] = Particle(glass, sphere);
+        particles[i].setId(i);
+        particles[i].setRadius(i+0.1f);
     }
 
-    std::cout << "particle radius: "<< particle[0].getRadius() << std::endl;
-    std::cout << "particle Material: "<< particle[0].getName() << std::endl;
-    const Particle* devParticle =  particle.data();
+    Insertion insertion;
+    insertion.fillGrid(particles, {0,0,0}, {1,1,1},0.2);
+
+    std::cout << "particle radius: "<< particles[0].getRadius() << std::endl;
+    std::cout << "particle Material: "<< particles[0].getMaterialName() << std::endl;
+    const Particle* devParticle =  particles.data();
     GpuClass gpu(devParticle, N);
     gpu.printHellow();
 

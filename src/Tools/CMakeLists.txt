@@ -4,6 +4,7 @@ set(SOURCES
         CudaHelper.cpp
         CudaHelper.hpp
         Quaternion.hpp
+        AABB/AABB.hpp
 )
 
 add_library( ${LIB_NAME} SHARED  ${SOURCES})

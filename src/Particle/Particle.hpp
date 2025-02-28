@@ -7,6 +7,7 @@
 #include "Material/Material.hpp"
 #include "Shape/Sphere/Sphere.hpp"
 #include "Tools/Quaternion.hpp"
+#include "Tools/AABB/AABB.hpp"
 
 class Particle final :public Material, public Sphere
 {
@@ -52,6 +53,9 @@ public:
     float3 torque = {0.f,0.f,0.f};
 
     float inertia= 0.f;
+
+    AxisAlignedBoundingBox<float3> boundingBox;
+
 private:
 
 
