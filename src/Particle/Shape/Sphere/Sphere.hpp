@@ -29,6 +29,7 @@ public:
 
 private:
     float radius_ = 0;
+
     AxisAlignedBoundingBox<float3> boundingBox_;
 };
 

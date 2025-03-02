@@ -5,6 +5,7 @@
 // Required to include CUDA vector types
 #include <cuda_runtime.h>
 #include <vector>
+#include <ContactDetection/ContactDetection.cuh>
 #include <Particle/Shape/Sphere/Sphere.hpp>
 #include <Tools/Config/Parser.h>
 #include "GpuClass.cuh"
@@ -30,6 +31,10 @@ int main(int argc, char **argv)
 
     Insertion insertion;
     insertion.fillGrid(particles, {0,0,0}, {1,1,1},0.2);
+
+    ContactDetection contactDetection(QUADTREE);
+    auto potential_pairs = contactDetection.braodPhase(particles);
+    actual_contacts = contactDetection.narrowPhase(potential_pairs);
 
     std::cout << "particle radius: "<< particles[0].getRadius() << std::endl;
     std::cout << "particle Material: "<< particles[0].getMaterialName() << std::endl;
