@@ -9,7 +9,7 @@
 #include "Tools/Quaternion.hpp"
 #include "Tools/AABB/AABB.hpp"
 
-class Particle final :public Material, public Sphere
+class Particle final : public Material, public Sphere
 {
 public:
 
@@ -23,9 +23,8 @@ public:
 
     Particle( Particle &);
 
-    // Other methods remain the same...
+    // Other methods remain the same ...
     ~Particle() = default;
-
 
     // Orientation-specific methods
     void setOrientation(const Quaternion& q) { orientation = q; }

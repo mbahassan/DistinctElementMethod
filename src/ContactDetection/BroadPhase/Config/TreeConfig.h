@@ -10,12 +10,12 @@
 struct TreeConfig
 {
     TreeType type = QUADTREE;
-    float2 origin;
-    float2 size;
-    int maxDepth;
+    float3 origin;
+    float3 size;
+    int maxDepth = 2;
 
-    const int threadsPerBlock = 1024;
-    int minPointsToDivide;
+    const int threadsPerBlock = 128;
+    int minPointsToDivide= 3;
 
     inline int GetNodesCount() const
     {

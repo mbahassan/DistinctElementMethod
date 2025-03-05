@@ -128,6 +128,45 @@ public:
         return particles;
     }
 
+    std::vector<Particle> fillGrid2D(std::vector<Particle>& particles,
+                                 float3 boxMin,
+                                 float3 boxMax,
+                                 float spacing) {
+        int particlesCreated = 0;
+        const unsigned numParticles = particles.size();
+
+        // Calculate balanced grid dimensions using a square grid (2D)
+        int a = static_cast<int>(std::sqrt(numParticles));
+        int b = a;
+        while (a * b < numParticles) {
+            if (a <= b) ++a;
+            else ++b;
+        }
+
+        float3 currentPos = boxMin;
+
+        // Create particles on a 2D grid (x and y), keeping z constant
+        for (int x = 0; x < a && particlesCreated < numParticles; x++) {
+            currentPos.y = boxMin.y;
+            for (int y = 0; y < b && particlesCreated < numParticles; y++) {
+                // Set the particle position; using boxMin.z as a constant z-value.
+                particles[particlesCreated].position = make_float3(currentPos.x, currentPos.y, boxMin.z);
+
+                // For non-spherical particles, initialize a random orientation.
+                if (particles[particlesCreated].getShapeType() != Shape::SPHERE) {
+                    Quaternion randomOrientation = getRandomOrientation();
+                    particles[particlesCreated].setOrientation(randomOrientation);
+                }
+
+                particlesCreated++;
+                currentPos.y += spacing;
+            }
+            currentPos.x += spacing;
+        }
+
+        return particles;
+    }
+
 private:
     Quaternion getRandomOrientation()
     {

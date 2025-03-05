@@ -10,7 +10,7 @@
 struct ConfigMaterial
 {
     /// Collection of the needed paths
-    std::string materialName;
+    int materialId;
 
     float youngsModulus;
     float density;

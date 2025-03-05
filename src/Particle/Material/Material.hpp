@@ -6,7 +6,6 @@
 #define MATERIAL_H
 
 #include <string>
-#include <utility>
 #include <Tools/Config/Parser.h>
 
 class Material {
@@ -18,7 +17,7 @@ public:
     {
         const nlohmann::json data = Parser::readJson(path);
 
-        name_ = data["materialName"];
+        materialId_ = data["materialId"];
         density_ = data["density"];
         youngsModulus_ = data["youngsModulus"];
         poissonRatio_ = data["poissonRatio"];
@@ -31,13 +30,13 @@ public:
     }
 
 
-    Material(std::string  name,
+    Material(int materialId,
             float density,
             float youngsModulus,
             float poissonRatio,
             float frictionCoeff,
             float restitutionCoeff)
-        : name_(std::move(name)),
+        :materialId_(materialId),
           density_(density),
           youngsModulus_(youngsModulus),
           poissonRatio_(poissonRatio),
@@ -51,7 +50,7 @@ public:
 
     // Copy constructor
     Material(const Material& other)
-        : name_(other.name_),
+        :materialId_(other.materialId_),
           density_(other.density_),
           youngsModulus_(other.youngsModulus_),
           poissonRatio_(other.poissonRatio_),
@@ -64,7 +63,7 @@ public:
     virtual ~Material() = default;
 
     // Getters
-    const std::string& getMaterialName() const { return name_; }
+    int getMaterialId() const { return materialId_; }
     float getDensity() const { return density_; }
     float getYoungsModulus() const { return youngsModulus_; }
     float getPoissonRatio() const { return poissonRatio_; }
@@ -74,7 +73,7 @@ public:
     float getEffectiveYoungsModulus() const { return effectiveYoungsModulus_; }
 
     // Setters
-    void setName(const std::string& name) { name_ = name; }
+    void setMaterialId(const int materialId) { materialId_ = materialId; }
     void setDensity(float density) { density_ = density; }
 
     void setYoungsModulus(float youngsModulus) {
@@ -119,7 +118,7 @@ public:
 
 private:
     // Primary material properties
-    std::string name_ = "Default";
+    int materialId_ = 0;
     float density_ = 1000.0f;            // kg/m³
     float youngsModulus_ = 1.0e7f;       // Pa
     float poissonRatio_ = 0.3f;          // dimensionless

@@ -54,9 +54,7 @@ void QuadTreeBuilder::build(Particle* points, const int size)
         pointsExch,
         tree,
         0,
-        treeConfig.maxDepth,
-        treeConfig.minPointsToDivide,
-        treeConfig.threadsPerBlock
+        treeConfig
         );
 
     GET_CUDA_ERROR("KernelError");
@@ -74,9 +72,9 @@ void QuadTreeBuilder::build(Particle* points, const int size)
         const auto leafs = GetNodeByDepth<2>(depth);
         for (int leaf = 0; leaf < leafs; ++leaf)
         {
-            const QuadTree* const subTree = &tree2[leaf];
-
-            if ((subTree->PointsCount() < treeConfig.minPointsToDivide ||
+            const QuadTree* subTree = &tree2[leaf];
+            auto num_points_ = subTree->PointsCount();
+            if ((num_points_ < treeConfig.minPointsToDivide ||
                 depth == treeConfig.maxDepth - 1) && subTree->PointsCount() > 0)
             {
                 totalCount += subTree->PointsCount();

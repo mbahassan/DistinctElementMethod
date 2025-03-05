@@ -62,10 +62,29 @@
 
 namespace cg = cooperative_groups;
 
+__device__ void printNodeDebugInfo(
+    const QuadTree& node,
+    int depth,
+    const TreeConfig& configTree,
+    int numPoints)
+{
+    if (threadIdx.x == 0 && blockIdx.x == 0) {
+        printf("Node Debug Info:\n");
+        printf("  Depth: %d\n", depth);
+        printf("  StartId: %d\n", node.startId);
+        printf("  EndId: %d\n", node.endId);
+        printf("  NumPoints: %d\n", numPoints);
+        printf("  MinPointsToDivide: %d\n", configTree.minPointsToDivide);
+        printf("  MaxDepth: %d\n", configTree.maxDepth);
 
+        // Optional: Print bounding box
+        printf("  Bbox Min: (%.2f, %.2f)\n", node.bounds.min.x, node.bounds.min.y);
+        printf("  Bbox Max: (%.2f, %.2f)\n", node.bounds.max.x, node.bounds.max.y);
+    }
+}
 
 __global__ void QuadTreeKernel(Particle* points, Particle* pointsExch,
-    QuadTree* tree, int depth, int maxDepth, int minPointsToDivide, int threadsPerBlock) {
+    QuadTree* tree,int depth, TreeConfig configTree) {
 
     // Handle to thread block group
     auto thisWarp = cg::coalesced_threads();
@@ -73,7 +92,7 @@ __global__ void QuadTreeKernel(Particle* points, Particle* pointsExch,
     // auto thisWarp = cg::tiled_partition<32>(thisBlock);
 
     // Compute the coordinates of the threads in the block.
-    const int warpsPerBlock = threadsPerBlock / warpSize;
+    const int warpsPerBlock = configTree.threadsPerBlock / warpSize;
     const int warpId = threadIdx.x / warpSize;
     const int laneId = threadIdx.x % warpSize;
 
@@ -98,11 +117,11 @@ __global__ void QuadTreeKernel(Particle* points, Particle* pointsExch,
     //
 
     // Stop the recursion here. Make sure points[0] contains all the points.
-    if (numPoints < minPointsToDivide || depth < maxDepth - 1) {
-        if (depth > 0 && depth % 2 == 0) {
+    if (numPoints <= configTree.minPointsToDivide || depth >= configTree.maxDepth) {
+        if (depth % 2 == 1) {
             int start = node.startId;
 
-            for (start += threadIdx.x; start < node.endId; start += threadsPerBlock)
+            for (start += threadIdx.x; start < node.endId; start += configTree.threadsPerBlock)
             {
                 if (start < node.endId)
                     points[start] = pointsExch[start];
@@ -110,6 +129,8 @@ __global__ void QuadTreeKernel(Particle* points, Particle* pointsExch,
         }
         return;
     }
+
+    printNodeDebugInfo(node, depth, configTree, numPoints);
 
     // Shared memory to store the number of points
     extern __shared__ int pointsInCell[];
@@ -130,7 +151,7 @@ __global__ void QuadTreeKernel(Particle* points, Particle* pointsExch,
         bool isInRange = i < endId;
 
         // Load the coordinates of the point.
-        float2 p = isInRange ? pointsExch[i].position : make_float2(0.0f, 0.0f);
+        auto p = isInRange ? pointsExch[i].position : make_float3(0.0f, 0.0f, 0.0f);
 
         // Count top-left points.
         const auto isTopLeft = isInRange && p.x < center.x && p.y >= center.y;
@@ -242,7 +263,7 @@ __global__ void QuadTreeKernel(Particle* points, Particle* pointsExch,
         bool isInRange = i < endId;
 
         // Load the coordinates of the point
-        const auto p = isInRange ? pointsExch[i].position : float2{};
+        const auto p = isInRange ? pointsExch[i].position : float3{};
 
         /// Count top-left points.
         bool isTopLeft = isInRange && p.x < center.x && p.y >= center.y;
@@ -250,7 +271,7 @@ __global__ void QuadTreeKernel(Particle* points, Particle* pointsExch,
         const auto destId1 = offset1 + __popc(mask1 & lane_mask_lt);
 
         if (isTopLeft)
-            points[destId1] = p;
+            points[destId1].position = p;
 
         offset1 += thisWarp.shfl(__popc(mask1), 0);
 
@@ -260,7 +281,7 @@ __global__ void QuadTreeKernel(Particle* points, Particle* pointsExch,
         const auto destId2 = offset2 + __popc(mask2 & lane_mask_lt);
 
         if (isTopRight)
-            points[destId2] = p;
+            points[destId2].position = p;
 
         offset2 += thisWarp.shfl(__popc(mask2), 0);
 
@@ -270,7 +291,7 @@ __global__ void QuadTreeKernel(Particle* points, Particle* pointsExch,
         const auto destId3 = offset3 + __popc(mask3 & lane_mask_lt);
 
         if (isBottomLeft)
-            points[destId3] = p;
+            points[destId3].position = p;
 
         offset3 += thisWarp.shfl(__popc(mask3), 0);
 
@@ -280,7 +301,7 @@ __global__ void QuadTreeKernel(Particle* points, Particle* pointsExch,
         const auto destId4 = offset4 + __popc(mask4 & lane_mask_lt);
 
         if (isBottomRight)
-            points[destId4] = p;
+            points[destId4].position = p;
 
         offset4 += thisWarp.shfl(__popc(mask4), 0);
     }
@@ -291,10 +312,10 @@ __global__ void QuadTreeKernel(Particle* points, Particle* pointsExch,
     //
     // 5- Launch new blocks.
     //
-    if (!(depth >= maxDepth || numPoints <= minPointsToDivide))
+    if ((depth < configTree.maxDepth && numPoints > configTree.minPointsToDivide))
     {
         // The last thread launches new blocks.
-        if (threadIdx.x == threadsPerBlock - 1)
+        if (threadIdx.x == configTree.threadsPerBlock - 1)
         {
             auto childOffset = GetNodeByDepth<2>(depth) - (node.id & ~3);
             // The children.
@@ -331,7 +352,7 @@ __global__ void QuadTreeKernel(Particle* points, Particle* pointsExch,
             // Launch 4 children.
             QuadTreeKernel<<<4, thisBlock.size(), warpsPerBlock * 4 * sizeof(int)>>>(
             pointsExch, points, &children[treeIdNext],
-            depth + 1, maxDepth, minPointsToDivide, threadsPerBlock);
+            depth + 1, configTree);
         }
     }
 }

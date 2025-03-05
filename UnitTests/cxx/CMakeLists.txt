@@ -23,5 +23,6 @@ target_link_libraries(${EXE_NAME}
         Particle 
         Tools
         Base
+        ContactDetection
 )
 

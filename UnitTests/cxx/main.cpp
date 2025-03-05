@@ -10,13 +10,14 @@
 #include <Tools/Config/Parser.h>
 #include "GpuClass.cuh"
 #include "Insertion/InsertionCpu.h"
-
+#include <Particle/Material/ConfigMaterial.h>
 
 int main(int argc, char **argv)
 {
     auto config = Parser::getConfig("particle.json");
 
     int N = config.numberOfParticles;
+
     Sphere sphere(0.1);
 
     Material glass(config.materialConfigPath);
@@ -30,14 +31,14 @@ int main(int argc, char **argv)
     }
 
     Insertion insertion;
-    insertion.fillGrid(particles, {0,0,0}, {1,1,1},0.2);
+    insertion.fillGrid2D(particles, {0,0,0}, {1,1,0},0.2);
 
     ContactDetection contactDetection(QUADTREE);
-    auto potential_pairs = contactDetection.braodPhase(particles);
-    actual_contacts = contactDetection.narrowPhase(potential_pairs);
+    auto potential_pairs = contactDetection.broadPhase(particles);
+    // actual_contacts = contactDetection.narrowPhase(potential_pairs);
 
     std::cout << "particle radius: "<< particles[0].getRadius() << std::endl;
-    std::cout << "particle Material: "<< particles[0].getMaterialName() << std::endl;
+    std::cout << "particle Material: "<< particles[0].getMaterialId() << std::endl;
     const Particle* devParticle =  particles.data();
     GpuClass gpu(devParticle, N);
     gpu.printHellow();

@@ -6,7 +6,7 @@
 #define QUADTREE_H
 #include <ContactDetection/BroadPhase/ITree.h>
 
-struct QuadTree : public ITree<float2>
+struct QuadTree : ITree<float3>
 {
 };
 
