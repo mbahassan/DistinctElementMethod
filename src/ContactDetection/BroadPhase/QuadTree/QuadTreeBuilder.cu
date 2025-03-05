@@ -69,15 +69,15 @@ void QuadTreeBuilder::build(Particle* points, const int size)
 
     for (int depth = 0; depth < treeConfig.maxDepth; ++depth)
     {
-        const auto leafs = GetNodeByDepth<2>(depth);
+        const auto leafs = getNumNodesInCurrentDepth<2>(depth);
         for (int leaf = 0; leaf < leafs; ++leaf)
         {
             const QuadTree* subTree = &tree2[leaf];
-            auto num_points_ = subTree->PointsCount();
-            if ((num_points_ < treeConfig.minPointsToDivide ||
-                depth == treeConfig.maxDepth - 1) && subTree->PointsCount() > 0)
+
+            if ((subTree->maxParticlesPerNode() < treeConfig.minPointsToDivide ||
+                depth == treeConfig.maxDepth - 1) && subTree->maxParticlesPerNode() > 0)
             {
-                totalCount += subTree->PointsCount();
+                totalCount += subTree->maxParticlesPerNode();
             }
         }
 

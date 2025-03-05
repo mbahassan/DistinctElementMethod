@@ -62,26 +62,6 @@
 
 namespace cg = cooperative_groups;
 
-__device__ void printNodeDebugInfo(
-    const QuadTree& node,
-    int depth,
-    const TreeConfig& configTree,
-    int numPoints)
-{
-    if (threadIdx.x == 0 && blockIdx.x == 0) {
-        printf("Node Debug Info:\n");
-        printf("  Depth: %d\n", depth);
-        printf("  StartId: %d\n", node.startId);
-        printf("  EndId: %d\n", node.endId);
-        printf("  NumPoints: %d\n", numPoints);
-        printf("  MinPointsToDivide: %d\n", configTree.minPointsToDivide);
-        printf("  MaxDepth: %d\n", configTree.maxDepth);
-
-        // Optional: Print bounding box
-        printf("  Bbox Min: (%.2f, %.2f)\n", node.bounds.min.x, node.bounds.min.y);
-        printf("  Bbox Max: (%.2f, %.2f)\n", node.bounds.max.x, node.bounds.max.y);
-    }
-}
 
 __global__ void QuadTreeKernel(Particle* points, Particle* pointsExch,
     QuadTree* tree,int depth, TreeConfig configTree) {
@@ -130,7 +110,6 @@ __global__ void QuadTreeKernel(Particle* points, Particle* pointsExch,
         return;
     }
 
-    printNodeDebugInfo(node, depth, configTree, numPoints);
 
     // Shared memory to store the number of points
     extern __shared__ int pointsInCell[];
@@ -317,7 +296,7 @@ __global__ void QuadTreeKernel(Particle* points, Particle* pointsExch,
         // The last thread launches new blocks.
         if (threadIdx.x == configTree.threadsPerBlock - 1)
         {
-            auto childOffset = GetNodeByDepth<2>(depth) - (node.id & ~3);
+            auto childOffset = getNumNodesInCurrentDepth<2>(depth) - (node.id & ~3);
             // The children.
             QuadTree* children = &tree[childOffset];
 

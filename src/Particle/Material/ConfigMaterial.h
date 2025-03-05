@@ -5,8 +5,6 @@
 #ifndef CONFIGMATERIAL_H
 #define CONFIGMATERIAL_H
 
-#include <string>
-
 struct ConfigMaterial
 {
     /// Collection of the needed paths

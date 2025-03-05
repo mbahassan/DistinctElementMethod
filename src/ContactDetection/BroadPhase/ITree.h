@@ -20,7 +20,7 @@ struct ITree
         return bounds.Check(point);
     }
 
-    __host__ __device__ int PointsCount() const
+    __host__ __device__ int maxParticlesPerNode() const
     {
         return endId - startId;
     }

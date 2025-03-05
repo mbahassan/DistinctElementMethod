@@ -8,7 +8,6 @@
 #include "BroadPhase/QuadTree/QuadTreeBuilder.cuh"
 #include "ContactDetection/BroadPhase/Config/TreeType.h"
 #include "Particle/Particle.hpp"
-#include "ContactDetection/BroadPhase/QuadTree/QuadTree.h"
 #include "Tools/CudaHelper.hpp"
 
 struct PotentialContact {
@@ -24,10 +23,9 @@ struct Contact {
 
 class ContactDetection {
     public:
-
-    ContactDetection(TreeType treeType) {
+    explicit ContactDetection(const TreeType treeType){
         treeType_ = treeType;
-    };
+    } ;
 
     std::vector<PotentialContact> broadPhase(std::vector<Particle>& particles) {
         detectContacts(particles);
@@ -55,12 +53,34 @@ class ContactDetection {
             treeBuilder->build(points, pointsCount);
 
             deviceToHost(points, pointsCount, &pointsHost);
+
+            const QuadTree* tree2 = &treeBuilder->getTree();
+            int totalCount = 0;
+
+            for (int depth = 0; depth < treeConfig_.maxDepth; ++depth)
+            {
+                const auto leafs = getNumNodesInCurrentDepth<2>(depth);
+                for (int leaf = 0; leaf < leafs; ++leaf)
+                {
+                    const QuadTree* subTree = &tree2[leaf];
+                    std::cout<< "Tree id: " << subTree->id << " bounds: ("
+                    <<subTree->bounds.min.x<<" "<<subTree->bounds.min.y<<") ("<<subTree->bounds.max.x<<" "
+                    <<subTree->bounds.max.y<<" ) startId: "<<subTree->startId << " endId: " << subTree->endId <<std::endl;
+                    if ((subTree->maxParticlesPerNode() < treeConfig_.minPointsToDivide ||
+                        depth == treeConfig_.maxDepth - 1) && subTree->maxParticlesPerNode() > 0)
+                    {
+                        totalCount += subTree->maxParticlesPerNode();
+                    }
+                }
+
+                tree2 += leafs;
+            }
         }
     }
 
 private:
     TreeType treeType_;
-    TreeConfig treeConfig_;
+    TreeConfig treeConfig_ {};
 };
 
 

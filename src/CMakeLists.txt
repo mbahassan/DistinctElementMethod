@@ -1,6 +1,7 @@
 add_subdirectory(Base)
 add_subdirectory(ContactDetection)
 add_subdirectory(Insertion)
+add_subdirectory(Output)
 add_subdirectory(Particle)
 add_subdirectory(TimeIntegrator)
 add_subdirectory(Tools)

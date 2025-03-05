@@ -31,13 +31,13 @@ struct TreeConfig
 
 
 template<int DIMENSION>
-__host__ __device__ static int GetNodeByDepth(const int depth)
+__host__ __device__ static int getNumNodesInCurrentDepth(const int depth)
 {
     return 0;
 }
 
 template<>
-__host__ __device__ inline int GetNodeByDepth<2>(const int depth)
+__host__ __device__ inline int getNumNodesInCurrentDepth<2>(const int depth)
 {
     int sum = 1;
     for (int i = 0; i < depth; ++i)
@@ -49,7 +49,7 @@ __host__ __device__ inline int GetNodeByDepth<2>(const int depth)
 }
 
 template<>
-__host__ __device__ inline int GetNodeByDepth<3>(const int depth)
+__host__ __device__ inline int getNumNodesInCurrentDepth<3>(const int depth)
 {
     int sum = 1;
     for (int i = 0; i < depth; ++i)

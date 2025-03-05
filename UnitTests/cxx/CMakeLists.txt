@@ -20,9 +20,12 @@ target_include_directories(${EXE_NAME}
 #All cpp folder and linked a
 target_link_libraries(${EXE_NAME}
         PUBLIC
-        Particle 
-        Tools
         Base
         ContactDetection
+        Insertion
+        Output
+        Particle
+        TimeIntegrator
+        Tools
 )
 
