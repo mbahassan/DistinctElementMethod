@@ -53,12 +53,16 @@ int main(int argc, char **argv)
     // Bottom-right quadrant (x in [0.5, 1], y in [0, 0.5]): 2 particles -> no subdivision.
     particles[10].position = {0.60f, 0.10f, 0.0f};
     particles[11].position = {0.70f, 0.20f, 0.0f};
-    Output output("results");
-    output.writeParticles(particles, 0);
+
+
 
     ContactDetection contactDetection(QUADTREE);
     auto potential_pairs = contactDetection.broadPhase(particles);
     // actual_contacts = contactDetection.narrowPhase(potential_pairs);
+
+    Output output("results");
+    output.writeParticles(particles, 0);
+    output.writeTree(contactDetection.getTree(),0);
 
     std::cout << "particle radius: "<< particles[0].getRadius() << std::endl;
     std::cout << "particle Material id: "<< particles[0].getMaterialId() << std::endl;

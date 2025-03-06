@@ -2,6 +2,7 @@ set(LIB_NAME Output)
 
 set(SOURCES
         Output.cu
+        QuadTreeWriter.cu
 )
 
 add_library( ${LIB_NAME} SHARED  ${SOURCES})

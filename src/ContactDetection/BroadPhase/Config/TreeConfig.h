@@ -10,8 +10,8 @@
 struct TreeConfig
 {
     TreeType type = QUADTREE;
-    float3 origin;
-    float3 size;
+    float3 origin = {0.0f,0.0f,0.0f};
+    float3 size=  {1.0f,1.0f,1.0f};
     int maxDepth = 2;
 
     const int threadsPerBlock = 128;

@@ -42,17 +42,17 @@ class ContactDetection {
             treeConfig_.origin = {0,0,0};
             treeConfig_.size = {1,1,1};
 
-            auto pointsCount = particles.size();
+            int particlesCount = particles.size();
             Particle* pointsHost = particles.data();
-            std::cout << "RunAppOctree(): " << pointsCount << "\n";
+            std::cout << "RunAppOctree(): " << particlesCount << "\n";
             Particle* points;
-            hostToDevice(pointsHost, pointsCount, &points);
+            hostToDevice(pointsHost, particlesCount, &points);
 
-            auto treeBuilder = std::make_unique<QuadTreeBuilder>(treeConfig_);
-            treeBuilder->initialize(pointsCount);
-            treeBuilder->build(points, pointsCount);
+            treeBuilder = std::make_unique<QuadTreeBuilder>(treeConfig_);
+            treeBuilder->initialize(particlesCount);
+            treeBuilder->build(points, particlesCount);
 
-            deviceToHost(points, pointsCount, &pointsHost);
+            deviceToHost(points, particlesCount, &pointsHost);
 
             const QuadTree* tree2 = &treeBuilder->getTree();
             int totalCount = 0;
@@ -78,9 +78,12 @@ class ContactDetection {
         }
     }
 
+    auto getTree() const {return treeBuilder->getTree(); }
+
 private:
     TreeType treeType_;
     TreeConfig treeConfig_ {};
+    std::unique_ptr<QuadTreeBuilder> treeBuilder;
 };
 
 
