@@ -68,8 +68,8 @@ int main(int argc, char **argv)
     std::cout << "particle Material id: "<< particles[0].getMaterialId() << std::endl;
     const Particle* devParticle =  particles.data();
 
-    GpuClass gpu(devParticle, N);
-    //gpu.printHellow();
+    // GpuClass gpu(devParticle, N);
+    // gpu.printHellow();
 
     // cudaDeviceReset causes the driver to clean up all state. While
     // not mandatory in normal operation, it is good practice.  It is also
