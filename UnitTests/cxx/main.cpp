@@ -31,7 +31,7 @@ int main(int argc, char **argv)
         particles[i].setRadius(0.03f);
     }
 
-    Insertion insertion;
+    // Insertion insertion;
     // insertion.fillGrid2D(particles, {0,0,0}, {1,1,0},0.2);
 
     // Top-left quadrant (x in [0, 0.5], y in [0.5, 1]): 4 particles -> should subdivide.
