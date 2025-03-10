@@ -8,20 +8,31 @@
 #include "Shape/Sphere/Sphere.hpp"
 #include "Tools/Quaternion.hpp"
 #include "Tools/AABB/AABB.hpp"
+#include <Tools/ArthmiticOperator/MathOperators.hpp>
 
 class Particle final : public Material, public Sphere
 {
 public:
 
-    Particle();
+    __host__ __device__
+    Particle() = default;
 
     Particle(const Material& material, const Sphere& shape);
 
+    __host__ __device__
     Particle(const Particle &);
 
     Particle(const Material& material, Sphere& shape);
 
-    Particle( Particle &);
+    __host__ __device__
+    Particle(Particle &particle)
+    {
+        position = particle.position;
+        velocity = particle.velocity;
+
+        boundingBox.min = particle.position - particle.getRadius();
+        boundingBox.max = particle.position + particle.getRadius();
+    }
 
     // Other methods remain the same ...
     ~Particle() override = default;

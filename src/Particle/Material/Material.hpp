@@ -7,7 +7,7 @@
 
 #include <string>
 #include <Tools/Config/Parser.h>
-
+#include <cuda_runtime_api.h>
 class Material {
 public:
     // Constructors
@@ -64,12 +64,20 @@ public:
 
     // Getters
     int getMaterialId() const { return materialId_; }
+
+    __host__ __device__
     float getDensity() const { return density_; }
+
     float getYoungsModulus() const { return youngsModulus_; }
+
     float getPoissonRatio() const { return poissonRatio_; }
+
     float getFrictionCoeff() const { return frictionCoeff_; }
+
     float getRestitutionCoeff() const { return restitutionCoeff_; }
+
     float getShearModulus() const { return shearModulus_; }
+
     float getEffectiveYoungsModulus() const { return effectiveYoungsModulus_; }
 
     // Setters
@@ -121,13 +129,13 @@ private:
     int materialId_ = 0;
     float density_ = 1000.0f;            // kg/m³
     float youngsModulus_ = 1.0e7f;       // Pa
-    float poissonRatio_ = 0.3f;          // dimensionless
+    float poissonRatio_  = 0.3f;         // dimensionless
     float frictionCoeff_ = 0.3f;         // dimensionless
     float restitutionCoeff_ = 0.7f;      // dimensionless
 
     // Derived properties
     float shearModulus_ = 0.0f;          // Pa
-    float effectiveYoungsModulus_ = 0.0f; // Pa
+    float effectiveYoungsModulus_ = 0.0f;// Pa
 
     // Helper methods to calculate derived properties
     void calculateShearModulus() {
@@ -138,7 +146,5 @@ private:
         effectiveYoungsModulus_ = youngsModulus_ / (1.0f - poissonRatio_ * poissonRatio_);
     }
 };
-
-
 
 #endif //MATERIAL_H

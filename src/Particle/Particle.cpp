@@ -3,8 +3,6 @@
 #include <cmath>
 #include <Tools/ArthmiticOperator/MathOperators.hpp>
 
-Particle::Particle()
-{}
 
 Particle::Particle(const Material& material, const Sphere& shape):
 Material(material), Sphere(shape) {
@@ -28,14 +26,7 @@ Material(material), Sphere(shape)
     boundingBox.max = position + Sphere::getRadius();
 }
 
-Particle::Particle(Particle &particle)
-{
-    position = particle.position;
-    velocity = particle.velocity;
 
-    boundingBox.min = particle.position - particle.getRadius();
-    boundingBox.max = particle.position + particle.getRadius();
-}
 
 
 float3 Particle::getAxisDirection() const
