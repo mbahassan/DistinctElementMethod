@@ -82,19 +82,22 @@ void Output::writeParticles(const std::vector<Particle> &particles, const int ti
         vtpFile.close();
 }
 
-void Output::writeTree(const QuadTree& rootNode, int timestep)
+void Output::writeTree(const QuadTree* quadtree, int timestep)
 {
     // Get the tree configuration - you need to have access to this
     // You may need to add this as a member to the Output class or pass it as a parameter
-    TreeConfig config; // Replace with actual configuration access
+    TreeConfig config(4,2); // Replace with actual configuration access
+    // config.origin = {0,0,0};
+    // config.size = {1,1,1};
+
 
     std::string filename = createFilename("quadtree", timestep, ".vtu");
 
     // We need to pass the entire tree array, not just the root node
-    const QuadTree* treeArray = &rootNode;
+    const QuadTree* tree = quadtree;
 
     // Get the maximum depth from your tree configuration
     // int maxDepth = config.maxDepth;
 
-    QuadTreeWriter::writeQuadTree(filename, treeArray, config);
+    QuadTreeWriter::writeQuadTree(filename, tree, config);
 }

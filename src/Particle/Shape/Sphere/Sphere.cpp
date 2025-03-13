@@ -4,7 +4,8 @@
 
 #include "Sphere.hpp"
 
-Sphere::Sphere() {
+Sphere::Sphere()
+{
     setShapeType(SPHERE);
 }
 
@@ -17,7 +18,6 @@ Sphere::Sphere(const Sphere& sphere) {
     setShapeType(SPHERE);
 };
 
-Sphere::~Sphere()= default;
 
 void Sphere::setRadius(float radius) {radius_ = radius;}
 

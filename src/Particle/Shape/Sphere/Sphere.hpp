@@ -18,13 +18,18 @@ public:
 
     Sphere(const Sphere& sphere);
 
-    ~Sphere();
+    ~Sphere() = default;
 
     void setRadius(float radius);
 
     float getRadius() const override;
 
     float getVolume() const;
+
+    float3 supportMapping(const float3& direction) const
+    {
+        return normalize(direction) * radius_;
+    }
 
 
 private:

@@ -56,13 +56,13 @@ int main(int argc, char **argv)
 
 
 
-    ContactDetection contactDetection(QUADTREE);
-    auto potential_pairs = contactDetection.broadPhase(particles);
-    // actual_contacts = contactDetection.narrowPhase(potential_pairs);
+    ContactDetection cd(QUADTREE);
+    auto potential_pairs = cd.broadPhase(particles);
+    auto actual_contacts = cd.narrowPhase(potential_pairs);
 
     Output output("results");
     output.writeParticles(particles, 0);
-    output.writeTree(contactDetection.getTree(),0);
+    // output.writeTree(cd.getTree(),0);
 
     std::cout << "particle radius: "<< particles[0].getRadius() << std::endl;
     std::cout << "particle Material id: "<< particles[0].getMaterialId() << std::endl;

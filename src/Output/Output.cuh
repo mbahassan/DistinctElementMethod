@@ -21,7 +21,7 @@ public:
 
     void writeParticles(const std::vector<Particle>& particles, int timestep);
 
-    void writeTree(const QuadTree& quadtree, int timestep);
+    void writeTree(const QuadTree* quadtree, int timestep);
 
 private:
     std::string output_dir;

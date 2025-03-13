@@ -4,6 +4,12 @@ set(SOURCES
         ContactDetection.cu
         BroadPhase/QuadTree/QuadTreeBuilder.cu
         BroadPhase/QuadTree/QuadTreeBuilderKernel.cuh
+
+        # Narrow phase detection
+        NarrowPhase/NarrowPhase.cu
+        NarrowPhase/EPA/EPA.cu
+        NarrowPhase/GJK/GJK.cu
+        NarrowPhase/Simplex/Simplex.cu
 )
 
 # Enable CUDA dynamic parallelism

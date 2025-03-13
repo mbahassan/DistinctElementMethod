@@ -4,7 +4,7 @@
 
 #ifndef AABB_H
 #define AABB_H
-
+#include <Tools/ArthmiticOperator/MathOperators.hpp>
 template <typename T>
 struct AxisAlignedBoundingBox
 {

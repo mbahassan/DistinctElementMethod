@@ -5,17 +5,16 @@
 #ifndef SHAPE_H
 #define SHAPE_H
 #include <cuda_runtime_api.h>
-#include <memory>
 
 
 class Shape
 {
 public:
-  enum ShapeType {SPHERE, CYLINDER, CUBE};
+  enum ShapeType {SPHERE, CYLINDER, CUBE, POLYHEDRAL};
 
   Shape() = default;
 
-  ~Shape()= default;
+  virtual ~Shape()= default;
 
   __host__ __device__
   void setId(const unsigned int id) { id_ = id; }

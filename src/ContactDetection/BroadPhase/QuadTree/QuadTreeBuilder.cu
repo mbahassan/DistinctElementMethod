@@ -22,9 +22,10 @@ void QuadTreeBuilder::initialize(const int capacity)
 {
     cudaMalloc((void**)&pointsExch, capacity * sizeof(Particle));
     GET_CUDA_ERROR("cudaMalloc() pointsExch");
+
     // tree:
     const int maxNodes = treeConfig.GetNodesCount();
-    cudaMallocManaged((void**)&tree, maxNodes * sizeof(QuadTree));
+    cudaMallocManaged((void**)&tree, maxNodes * sizeof(QuadTree)); // plus one for the root
     GET_CUDA_ERROR("cudaMallocManaged() tree");
     cudaDeviceSynchronize();
     GET_CUDA_ERROR("cudaDeviceSynchronize");
@@ -48,12 +49,11 @@ void QuadTreeBuilder::build(Particle* points, const int size)
 
     cudaMemcpy(pointsExch, points, size * sizeof(Particle), cudaMemcpyDeviceToDevice);
 
-    QuadTreeKernel<<<1, treeConfig.threadsPerBlock, warpsPerBlock * 4 * sizeof(int)>>>
+    QuadTreeKernel<128><<<1, treeConfig.threadsPerBlock, warpsPerBlock * 4 * sizeof(int)>>>
     (
+        tree,
         points,
         pointsExch,
-        tree,
-        0,
         treeConfig
         );
 
@@ -74,10 +74,10 @@ void QuadTreeBuilder::build(Particle* points, const int size)
         {
             const QuadTree* subTree = &tree2[leaf];
 
-            if ((subTree->maxParticlesPerNode() < treeConfig.minPointsToDivide ||
-                depth == treeConfig.maxDepth - 1) && subTree->maxParticlesPerNode() > 0)
+            if ((subTree->particlesCountInNode() < treeConfig.minPointsPerNode ||
+                depth == treeConfig.maxDepth - 1) && subTree->particlesCountInNode() > 0)
             {
-                totalCount += subTree->maxParticlesPerNode();
+                totalCount += subTree->particlesCountInNode();
             }
         }
 
@@ -100,8 +100,8 @@ void QuadTreeBuilder::reset()
     for (int i = 0; i < maxNodes; ++i)
     {
         tree[i].id = 0;
-        tree[i].bounds.min = {0.0f, 0.0f};
-        tree[i].bounds.max = {0.0f, 0.0f};
+        tree[i].bounds.min = {0.0f, 0.0f, 0.0f};
+        tree[i].bounds.max = {0.0f, 0.0f, 0.0f};
         tree[i].startId = 0;
         tree[i].endId = 0;
     }

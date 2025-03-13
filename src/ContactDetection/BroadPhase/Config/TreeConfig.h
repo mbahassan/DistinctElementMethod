@@ -11,23 +11,46 @@ struct TreeConfig
 {
     TreeType type = QUADTREE;
     float3 origin = {0.0f,0.0f,0.0f};
-    float3 size=  {1.0f,1.0f,1.0f};
-    int maxDepth = 2;
+    float3 size =  {1.0f,1.0f,0.0f};
 
-    const int threadsPerBlock = 128;
-    int minPointsToDivide= 3;
+    int depth = -1;
+    const int maxDepth ;
+    const int minPointsPerNode ;
+    int numNodesAtThisLevel = 0;
+    const int threadsPerBlock = 128;//256;//128;
 
-    inline int GetNodesCount() const
+    // Constructor set to default values.
+    __host__ __device__
+    TreeConfig(int maxDepth, int minPointsPerNode):
+          depth(0),
+          maxDepth(maxDepth),
+          minPointsPerNode(minPointsPerNode),
+          numNodesAtThisLevel(1) {}
+
+    // Copy constructor. Changes the values for next iteration.
+    __host__ __device__
+    TreeConfig(const TreeConfig &params, bool):
+          depth(params.depth + 1),
+          maxDepth(params.maxDepth),
+          minPointsPerNode(params.minPointsPerNode),
+          numNodesAtThisLevel(4 * params.numNodesAtThisLevel) {}
+
+
+    int GetNodesCount() const
     {
         int maxNodes = 0;
-        for (int i = 0; i < maxDepth; ++i)
-        {
-            maxNodes += std::pow(type == TreeType::QUADTREE ? 4 : 8, i);
-        }
+        // for (int i = 0; i < maxDepth; ++i)
+        // {
+        //     const int val  = type == QUADTREE ? 4 : 8;
+        //     maxNodes += std::pow(val, i);
+        // }
+
+        for (int i = 0, num_nodes_at_level = 1; i < maxDepth; ++i, num_nodes_at_level *= 4)
+            maxNodes += num_nodes_at_level;
 
         return maxNodes;
     }
-};
+} ;
 
 
 template<int DIMENSION>

@@ -1,7 +1,7 @@
 #ifndef PARTICLE_LIBRARY_H
 #define PARTICLE_LIBRARY_H
 
-#include <cuda_runtime.h>
+#include <cuda_runtime_api.h>
 
 
 #include "Material/Material.hpp"
@@ -24,7 +24,7 @@ public:
     Particle( Particle &);
 
     // Other methods remain the same ...
-    ~Particle() = default;
+    ~Particle() override = default;
 
     // Orientation-specific methods
     void setOrientation(const Quaternion& q) { orientation = q; }

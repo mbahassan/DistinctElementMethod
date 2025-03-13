@@ -10,9 +10,10 @@
 template<typename T>
 struct ITree
 {
-    int id;
-    int startId;
-    int endId;
+    int id = 0;
+    int startId = 0;
+    int endId = 0;
+    bool isLeaf;
     AxisAlignedBoundingBox<T> bounds;
 
     __host__ __device__ bool Check(const T& point) const
@@ -20,7 +21,7 @@ struct ITree
         return bounds.Check(point);
     }
 
-    __host__ __device__ int maxParticlesPerNode() const
+    __host__ __device__ int particlesCountInNode() const
     {
         return endId - startId;
     }
