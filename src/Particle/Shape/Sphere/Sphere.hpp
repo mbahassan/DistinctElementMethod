@@ -22,7 +22,8 @@ public:
 
     void setRadius(float radius);
 
-    float getRadius() const override;
+    __host__ __device__
+    float getRadius() const {return radius_;}
 
     float getVolume() const;
 

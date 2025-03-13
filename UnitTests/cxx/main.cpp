@@ -15,7 +15,7 @@
 
 int main(int argc, char **argv)
 {
-    auto config = Parser::getConfig("particle.json");
+    auto config = Parser::getConfig("input.json");
 
     int N = config.numberOfParticles;
 
@@ -55,10 +55,9 @@ int main(int argc, char **argv)
     particles[11].position = {0.70f, 0.20f, 0.0f};
 
 
-
-    ContactDetection cd(QUADTREE);
-    auto potential_pairs = cd.broadPhase(particles);
-    auto actual_contacts = cd.narrowPhase(potential_pairs);
+    ContactDetection cd("input.json");
+    auto potential_pairs = cd.runBroadPhase(particles);
+    // auto actual_contacts = cd.runNarrowPhase(particles, potential_pairs);
 
     Output output("results");
     output.writeParticles(particles, 0);

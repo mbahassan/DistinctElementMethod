@@ -14,12 +14,28 @@ struct TreeConfig
     float3 size =  {1.0f,1.0f,0.0f};
 
     int depth = -1;
-    const int maxDepth ;
-    const int minPointsPerNode ;
+    int maxDepth ;
+    int minPointsPerNode ;
     int numNodesAtThisLevel = 0;
     const int threadsPerBlock = 128;//256;//128;
 
+    // Copy assignment operator
+    TreeConfig& operator=(const TreeConfig& other) {
+        if (this != &other) { // Prevent self-assignment
+            this->maxDepth = other.maxDepth;
+            this->minPointsPerNode = other.minPointsPerNode;
+        }
+        return *this;
+    }
+
     // Constructor set to default values.
+    __host__ __device__
+    TreeConfig():
+          depth(0),
+          maxDepth(0),
+          minPointsPerNode(0),
+          numNodesAtThisLevel(1) {}
+
     __host__ __device__
     TreeConfig(int maxDepth, int minPointsPerNode):
           depth(0),

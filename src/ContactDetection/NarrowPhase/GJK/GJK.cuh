@@ -4,15 +4,16 @@
 
 #ifndef GJK_CUH
 #define GJK_CUH
+
 #include <random>
-#include <Particle/Particle.hpp>
+#include "Particle/Particle.hpp"
 #include "ContactDetection/NarrowPhase/Simplex/Simplex.cuh"
 
-class GJK
-{
-    public:
+class GJK {
+public:
+    GJK() : rng(std::random_device{}()) {}
 
-      // GJK algorithm implementation following the pseudocode provided
+    // GJK algorithm to detect overlap between two particles
     bool gjkOverlap(const Particle& particleA, const Particle& particleB) {
         // Initialize search direction as random unit vector
         float3 d = randomUnitVec();
@@ -25,7 +26,7 @@ class GJK
         simplex.add(C);
 
         // Early exit check
-        if (C.dot(d) < 0) {
+        if ((C&d) < 0) {
             return false;
         }
 
@@ -37,30 +38,31 @@ class GJK
         simplex.add(B);
 
         // Early exit check
-        if (B.dot(d) < 0) {
+        if ((B&d) < 0) {
             return false;
         }
 
         // Calculate new search direction (line perpendicular to AB through origin)
         float3 BC = C - B;
-        d = BC.cross(-B).cross(BC);
+        d = (BC^-B)^BC;
 
         // If d is too small, pick a perpendicular direction
-        if (d.lengthSquared() < 0.0001f) {
+        if (magSquared(d) < 0.0001f) {
             // Get perpendicular direction to the line
             float3 perpDir = std::abs(BC.x) > std::abs(BC.y) ?
                 float3(0, 1, 0) : float3(1, 0, 0);
-            d = BC.cross(perpDir);
+            d = BC ^ perpDir;
         }
 
         // Main GJK loop
-        while (true) {
+        int maxIterations = 20; // Prevent infinite loop
+        for (int i = 0; i < maxIterations; i++) {
             // Get new support point A
             float3 A = sATMB(particleA, particleB, d);
             simplex.add(A);
 
             // Early exit check
-            if (A.dot(d) < 0) {
+            if ((A&d) < 0) {
                 return false;
             }
 
@@ -68,40 +70,95 @@ class GJK
             if (updateSimplexAndSearchDirection(simplex, d)) {
                 return true; // Origin is inside simplex
             }
+        }
 
-            // Check if origin is inside simplex
-            if (isOriginInsideSimplex(simplex)) {
-                return true;
+        return false;
+    }
+
+    // Modified version of GJK that also returns the simplex
+    bool gjkOverlapWithSimplex(const Particle& particleA, const Particle& particleB, Simplex& simplex) {
+        // Initialize search direction as random unit vector
+        float3 d = randomUnitVec();
+
+        // Clear simplex
+        simplex.clear();
+
+        // Get first support point C
+        float3 C = sATMB(particleA, particleB, d);
+        simplex.add(C);
+
+        // Early exit check
+        if ((C&d) < 0) {
+            return false;
+        }
+
+        // Set new search direction to -C
+        d = -C;
+
+        // Get second support point B
+        float3 B = sATMB(particleA, particleB, d);
+        simplex.add(B);
+
+        // Early exit check
+        if ((B&d) < 0) {
+            return false;
+        }
+
+        // Calculate new search direction (line perpendicular to AB through origin)
+        float3 BC = C - B;
+        d = (BC^-B)^BC;
+
+        // If d is too small, pick a perpendicular direction
+        if (magSquared(d) < 0.0001f) {
+            // Get perpendicular direction to the line
+            float3 perpDir = std::abs(BC.x) > std::abs(BC.y) ?
+                float3(0, 1, 0) : float3(1, 0, 0);
+            d = BC ^ perpDir;
+        }
+
+        /// Main GJK loop
+        int maxIterations = 20;
+        for (int i = 0; i < maxIterations; i++) {
+            // Get new support point A
+            float3 A = sATMB(particleA, particleB, d);
+            simplex.add(A);
+
+            // Early exit check
+            if ((A&d) < 0) {
+                return false;
             }
 
-            // Check for infinite loop: if simplex hasn't changed in a few iterations
-            // Too complex to implement here, but would be a good addition
+            // Update simplex and search direction
+            if (updateSimplexAndSearchDirection(simplex, d)) {
+                return true; // Origin is inside simplex
+            }
         }
-    }
-    private:
 
-      // Generate a random unit vector for initial direction
+        return false;
+    }
+
+private:
+    std::mt19937 rng;
+
+    // Generate a random unit vector for initial direction
     float3 randomUnitVec() {
         std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
         float3 vec(dist(rng), dist(rng), dist(rng));
 
         // Keep generating until we have a non-zero vector
-        while (vec.lengthSquared() < 0.0001f) {
+        while (magSquared(vec) < 0.0001f) {
             vec = float3(dist(rng), dist(rng), dist(rng));
         }
 
-        return vec.normalized();
+        return normalize(vec);
     }
 
-     // Support function for GJK Support function - Minkowski difference
-    float3 sATMB(const Particle& particleA, const Particle& particleB, const float3& direction)
-    {
+    // Support function for GJK - Minkowski difference
+    float3 sATMB(const Particle& particleA, const Particle& particleB, const float3& direction) {
         // Get the furthest point of particle A in direction
         float3 supportA = particleA.supportMapping(direction) + particleA.position;
-        // float3 supportA = getFurthestPoint(particleA, direction);
 
         // Get furthest point of particle B in opposite direction
-        // float3 supportB = getFurthestPoint(particleB, float3(-direction.x, -direction.y, -direction.z));
         float3 supportB = particleB.supportMapping(-direction) + particleB.position;
 
         // Return the Minkowski difference
@@ -118,12 +175,12 @@ class GJK
 
         if ((AB&AO) > 0) {
             // Origin is in the direction of the line segment
-            direction = (AB^AO)^(AB);
+            direction = (AB^AO)^AB;
             if (magSquared(direction) < 0.0001f) {
                 // Origin is on the line, pick any perpendicular direction
                 float3 perpDir = std::abs(AB.x) > std::abs(AB.y) ?
                     float3(0, 1, 0) : float3(1, 0, 0);
-                direction = AB^(perpDir);
+                direction = AB ^ perpDir;
             }
         } else {
             // Origin is behind A, only keep A
@@ -144,23 +201,23 @@ class GJK
         const float3 AC = C - A;
         const float3 AO = -A; // Vector from A to origin
 
-        const float3 ABC = AB^(AC);
+        const float3 ABC = AB^AC;
 
         // Check if origin is above or below triangle
-        const float3 ABCperp = ABC^(AB);
+        const float3 ABCperp = ABC^AB;
         if ((ABCperp&AO) > 0) {
             // Origin is on the outside of edge AB
             if ((AB&AO) > 0) {
                 // Origin is in voronoi region of AB edge
                 simplex.getPoints() = {A, B};
-                direction = (AB^AO)^(AB);
+                direction = (AB^AO)^AB;
             } else {
                 // Check AC direction
                 const float3 ACperp = AC^ABC;
-                if ((ACperp^AO) > 0) {
+                if ((ACperp&AO) > 0.0f) {
                     // Origin is in voronoi region of AC edge
                     simplex.getPoints() = {A, C};
-                    direction = (AC^AO)^(AC);
+                    direction = (AC^AO)^AC;
                 } else {
                     // Origin is in voronoi region of A
                     simplex.getPoints() = {A};
@@ -169,16 +226,15 @@ class GJK
             }
         } else {
             // Origin is on the other side of edge AB
-            const float3 ACperp = AC^(ABC);
+            const float3 ACperp = AC^ABC;
             if ((ACperp&AO) > 0) {
                 // Origin is in voronoi region of AC edge
                 simplex.getPoints() = {A, C};
-                direction = AC^(AO)^(AC);
+                direction = AC^AO^AC;
             } else {
                 // Origin is either in voronoi region of the triangle or on the other side
                 if ((ABC&AO) > 0) {
                     // Origin is above the triangle
-                    simplex.getPoints() = {A, B, C};
                     direction = ABC;
                 } else {
                     // Origin is below the triangle
@@ -204,9 +260,9 @@ class GJK
         const float3 AO = -A; // Vector from A to origin
 
         // Check each face of the tetrahedron
-        const float3 ABC = AB^(AC);
-        const float3 ACD = AC^(AD);
-        const float3 ADB = AD^(AB);
+        const float3 ABC = AB^AC;
+        const float3 ACD = AC^AD;
+        const float3 ADB = AD^AB;
 
         // If the origin is on the same side of all faces, we have a collision
         // Otherwise, we need to find which voronoi region the origin is in
@@ -244,14 +300,36 @@ class GJK
                 return updateSimplexTetrahedron(simplex, direction);
             default:
                 // Should never get here
-                    return false;
+                return false;
         }
     }
 
-    bool isOriginInsideSimplex(Simplex& simplex);
+    // Check if origin is inside simplex
+    bool isOriginInsideSimplex(const Simplex& simplex) {
+        // For a tetrahedron, we need to check if origin is inside
+        if (simplex.size() == 4) {
+            const float3& A = simplex[0];
+            const float3& B = simplex[1];
+            const float3& C = simplex[2];
+            const float3& D = simplex[3];
 
-    std::mt19937 rng;
+            const float3 AB = B - A;
+            const float3 AC = C - A;
+            const float3 AD = D - A;
+            const float3 AO = -A;
+
+            // Check if origin is on the same side of all faces
+            float3 ABC = AB^AC;
+            float3 ACD = AC^AD;
+            float3 ADB = AD^AB;
+            float3 BDC = (D-B)^(C-B);
+
+            if ((ABC&AO) > 0 && (ACD&AO) > 0 && (ADB&AO) > 0 && (BDC&(B-float3(0,0,0))) > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
 };
 
-
-#endif //GJK_CUH
+#endif // GJK_CUH

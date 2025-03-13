@@ -28,8 +28,6 @@ public:
   __host__ __device__
   ShapeType getShapeType() const {return shapeType_;}
 
-  /// Sphere
-  virtual float getRadius() const = 0;
 
 private:
   unsigned int id_ = 0;

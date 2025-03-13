@@ -21,6 +21,5 @@ Sphere::Sphere(const Sphere& sphere) {
 
 void Sphere::setRadius(float radius) {radius_ = radius;}
 
-float Sphere::getRadius() const {return radius_;}
 
 float Sphere::getVolume() const{return 4.0f/radius_*radius_*radius_/3.0f;}

@@ -5,50 +5,59 @@
 #ifndef SIMPLEX_CUH
 #define SIMPLEX_CUH
 
-
+#include <vector>
 
 class Simplex {
-private:
-    std::array<float3, 4> points;
-    int size;
-
 public:
-    Simplex() : size(0) {}
-
-    void push_front(const float3& point) {
-        for (int i = size; i > 0; i--) {
-            points[i] = points[i-1];
-        }
-        points[0] = point;
-        size = std::min(size + 1, 4);
+    Simplex()
+    {
+        points.reserve(4); // Maximum of 4 points in 3D
     }
 
-    void remove_point(int index) {
-        for (int i = index; i < size - 1; i++) {
-            points[i] = points[i+1];
-        }
-        size--;
+    void add(const float3 &point)
+    {
+        points.push_back(point);
     }
 
-    const float3& operator[](int index) const {
+    void clear()
+    {
+        points.clear();
+    }
+
+    size_t size() const
+    {
+        return points.size();
+    }
+
+    const float3 &operator[](size_t index) const
+    {
         return points[index];
     }
 
-    float3& operator[](int index) {
+    float3 &operator[](size_t index)
+    {
         return points[index];
     }
 
-    int get_size() const {
-        return size;
+    void removeLastPoint()
+    {
+        if (!points.empty())
+        {
+            points.pop_back();
+        }
     }
 
-    void set_size(int newSize) {
-        size = newSize;
+    // Sets simplex to the given points
+    void set(const std::vector<float3> &newPoints) {
+        points = newPoints;
     }
 
-    void clear() {
-        size = 0;
+    std::vector<float3> &getPoints() {
+        return points;
     }
+
+private:
+    std::vector<float3> points;
 };
 
 

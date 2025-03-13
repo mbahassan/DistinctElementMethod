@@ -1,98 +1,51 @@
 //
-// Created by mbahassan on 2/28/25.
+// Created by mbahassan on 3/13/25.
 //
 
-#ifndef CONTACTDETECTION_CUH
-#define CONTACTDETECTION_CUH
+#ifndef CONTACT_DETECTION_CUH
+#define CONTACT_DETECTION_CUH
 
-#include <unordered_set>
-#include <Output/QuadTreeWriter.cuh>
-
-#include "BroadPhase/QuadTree/QuadTreeBuilder.cuh"
+#include <vector>
+#include "BroadPhase/BroadPhase.cuh"
+#include "NarrowPhase/NarrowPhase.cuh"
 #include "ContactDetection/BroadPhase/Config/TreeType.h"
 #include "Particle/Particle.hpp"
-#include "Tools/CudaHelper.hpp"
+#include "ContactConfig.h"
 
-struct PotentialContact
-{
-    int nodeId;
-    int particleIdI;
-    int particleIdJ;
-};
 
-struct Contact
-{
-    Particle pi;
-    Particle pj;
-    float3 normal;
-    float3 contactPoint;
-};
+class ContactDetection : ContactConfig {
+public:
+    explicit ContactDetection(const TreeType treeType): broadPhase_(treeType) {}
 
-class ContactDetection
-{
-    public:
-    explicit ContactDetection(const TreeType treeType): treeConfig_(2,1)
-    {
-        treeType_ = treeType;
+    explicit ContactDetection(const std::string& path): broadPhase_(path) {}
+
+    // Run the complete contact detection pipeline
+    std::vector<EPA::Contact> detectContacts(std::vector<Particle>& particles) {
+        // Initialize the broad phase (build the spatial data structure)
+        broadPhase_.initialize(particles);
+
+        // Run broad phase to get potential contacts
+        std::vector<PotentialContact> potentialContacts = broadPhase_.findPotentialContacts(particles);
+
+        // Run narrow phase to get actual contacts
+        return narrowPhase_.detectCollisions(particles, potentialContacts);
     }
 
-    std::vector<PotentialContact> broadPhase(std::vector<Particle>& particles)
-    {
-        detectContacts(particles);
-
-        return findPotentialContacts(particles);
+    // You can also provide separate methods if needed
+    std::vector<PotentialContact> runBroadPhase(std::vector<Particle>& particles) {
+        broadPhase_.initialize(particles);
+        return broadPhase_.findPotentialContacts(particles);
     }
 
-    std::vector<Contact> narrowPhase(std::vector<PotentialContact>& potentialContact)
-    {
-
-        return {};
+    std::vector<EPA::Contact> runNarrowPhase(
+        const std::vector<Particle>& particles,
+        const std::vector<PotentialContact>& potentialContacts) {
+        return narrowPhase_.detectCollisions(particles, potentialContacts);
     }
-
-    void detectContacts(std::vector<Particle>& particles)
-    {
-        if (treeType_ == QUADTREE)
-        {
-            int particlesCount = particles.size();
-            Particle* pointsHost = particles.data();
-            std::cout << "RunAppOctree(): " << particlesCount << "\n";
-            Particle* points;
-            hostToDevice(pointsHost, particlesCount, &points);
-
-            treeBuilder = std::make_unique<QuadTreeBuilder>(treeConfig_);
-            treeBuilder->initialize(particlesCount);
-            treeBuilder->build(points, particlesCount);
-
-            QuadTreeWriter::writeQuadTree("./results/quadtree_000000.vtu", &treeBuilder->getTree(), treeConfig_);
-            deviceToHost(points, particlesCount, &pointsHost);
-
-        }
-    }
-
 
 private:
-
-    std::vector<PotentialContact> findPotentialContacts(std::vector<Particle>& points);
-
-    void checkContactsInLeaf(const QuadTree* leaf, std::vector<Particle>& points,
-        std::vector<PotentialContact>& contacts);
-
-    void checkContactsBetweenLeaves(
-    const QuadTree* leafA,
-    const QuadTree* leafB,
-    std::vector<Particle>& points,
-    std::vector<PotentialContact>& contacts,
-    std::unordered_set<uint64_t>& processedPairs);
-
-    bool areNeighboringNodes(const QuadTree* nodeI, const QuadTree* nodeJ);
-
-    TreeType treeType_;
-
-    TreeConfig treeConfig_ ;
-
-    std::unique_ptr<QuadTreeBuilder> treeBuilder;
+    BroadPhase broadPhase_;
+    NarrowPhase narrowPhase_;
 };
 
-
-
-#endif //CONTACTDETECTION_CUH
+#endif // CONTACT_DETECTION_CUH

@@ -22,10 +22,10 @@ class Parser
 
         Config result;
         result.restart = true;
-        result.numberOfParticles = data["numberOfParticles"];
+        result.numberOfParticles = data["Simulation"]["numberOfParticles"];
 
-        result.materialConfigPath= data["materialConfigPath"];
-        result.shapeConfigPath = data["shapeConfigPath"];
+        result.materialConfigPath= data["Simulation"]["materialConfigPath"];
+        result.shapeConfigPath = data["Simulation"]["shapeConfigPath"];
 
         solveRelativePath(result.materialConfigPath, path);
         solveRelativePath(result.shapeConfigPath, path);

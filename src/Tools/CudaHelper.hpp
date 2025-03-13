@@ -12,7 +12,7 @@ void getLastCudaError(const char *errorMessage, const char *file, int line);
 #define GET_CUDA_ERROR(msg) getLastCudaError(msg, __FILE__, __LINE__);
 
 template<typename T>
-void deviceToHost(const T* devPtr, const int size, T** hostPtr)
+void deviceToHost(const T* devPtr, const size_t size, T** hostPtr)
 {
     *hostPtr = (T*)malloc(size * sizeof(T));
 
@@ -23,7 +23,7 @@ void deviceToHost(const T* devPtr, const int size, T** hostPtr)
 }
 
 template<typename T>
-void hostToDevice(const T* hostPtr, const int size, T** devPtr)
+void hostToDevice(const T* hostPtr, const size_t size, T** devPtr)
 {
     cudaMalloc((void**)devPtr, size * sizeof(T));
 
