@@ -5,6 +5,7 @@ set(SOURCES
         Material/Material.cpp
         Shape/Shape.cpp
         Shape/Sphere/Sphere.cpp
+        Shape/Polyhedral/Polyhedral.cpp
         Material/ConfigMaterial.h
 )
 

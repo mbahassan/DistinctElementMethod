@@ -6,7 +6,6 @@
 #define SPHERE_H
 
 #include <Particle/Shape/Shape.hpp>
-
 #include "Tools/AABB/AABB.hpp"
 
 class Sphere :public Shape
