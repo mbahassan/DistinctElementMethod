@@ -5,7 +5,7 @@
 #include <iomanip>
 #include <filesystem>
 #include <ContactDetection/BroadPhase/QuadTree/QuadTree.h>
-#include <Particle/Particle.hpp>
+#include <Particle/Spherical.hpp>
 #include <ContactDetection/BroadPhase/Config/TreeConfig.h>
 
 class QuadTreeWriter {

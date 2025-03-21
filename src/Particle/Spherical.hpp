@@ -1,5 +1,5 @@
-#ifndef PARTICLE_LIBRARY_H
-#define PARTICLE_LIBRARY_H
+#ifndef SPHERICAL_PARTICLE_H
+#define SPHERICAL_PARTICLE_H
 
 #include <cuda_runtime_api.h>
 
@@ -10,32 +10,34 @@
 #include "Tools/AABB/AABB.hpp"
 #include <Tools/ArthmiticOperator/MathOperators.hpp>
 
-class Particle final : public Material, public Sphere
+
+
+class Spherical : public Material, public Sphere
 {
 public:
 
     __host__ __device__
-    Particle() = default;
+    Spherical() = default;
 
-    Particle(const Material& material, const Sphere& shape);
-
-    __host__ __device__
-    Particle(const Particle &);
-
-    Particle(const Material& material, Sphere& shape);
+    Spherical(const Material& material, const Sphere& shape);
 
     __host__ __device__
-    Particle(Particle &particle)
+    Spherical(const Spherical &);
+
+    Spherical(const Material& material, Sphere& shape);
+
+    __host__ __device__
+    Spherical(Spherical &particle)
     {
         position = particle.position;
         velocity = particle.velocity;
 
-        boundingBox.min = particle.position - particle.getRadius();
-        boundingBox.max = particle.position + particle.getRadius();
+        boundingBox.min = particle.position - particle.getMin();
+        boundingBox.max = particle.position + particle.getMax();
     }
 
     // Other methods remain the same ...
-    ~Particle() override = default;
+    ~Spherical() override = default;
 
     // Orientation-specific methods
     void setOrientation(const Quaternion& q) { orientation = q; }
@@ -66,9 +68,7 @@ public:
 
     AxisAlignedBoundingBox<float3> boundingBox;
 
-private:
-
 
 };
 
-#endif //PARTICLE_LIBRARY_H
+#endif //SPHERICAL_PARTICLE_H

@@ -1,35 +1,25 @@
-#include "Particle.hpp"
+#include "Polyhedral.hpp"
 
 #include <cmath>
 #include <Tools/ArthmiticOperator/MathOperators.hpp>
 
 
-Particle::Particle(const Material& material, const Sphere& shape):
-Material(material), Sphere(shape) {
-    boundingBox.min = position - Sphere::getRadius();
-    boundingBox.max = position + Sphere::getRadius();
+Polyhedral::Polyhedral(const Material& material, const Polytope& shape):
+Material(material), Polytope(shape) {
+    boundingBox.min = position - Polytope::getMin();
+    boundingBox.max = position + Polytope::getMax();
 }
 
-Particle::Particle(const Particle &particle)
+
+Polyhedral::Polyhedral(const Material& material, Polytope& shape):
+Material(material), Polytope(shape)
 {
-    position = particle.position;
-    velocity = particle.velocity;
-
-    boundingBox.min = particle.position - particle.getRadius();
-    boundingBox.max = particle.position + particle.getRadius();
-}
-
-Particle::Particle(const Material& material, Sphere& shape):
-Material(material), Sphere(shape)
-{
-    boundingBox.min = position - Sphere::getRadius();
-    boundingBox.max = position + Sphere::getRadius();
+    boundingBox.min = position + Polytope::getMin();
+    boundingBox.max = position + Polytope::getMax();
 }
 
 
-
-
-float3 Particle::getAxisDirection() const
+float3 Polyhedral::getAxisDirection() const
 {
     // The default axis direction is typically along the z-axis (0,0,1)
     float3 defaultAxis = make_float3(0.0f, 0.0f, 1.0f);
@@ -54,7 +44,8 @@ float3 Particle::getAxisDirection() const
                         rotatedAxis.y * rotatedAxis.y +
                         rotatedAxis.z * rotatedAxis.z);
 
-    if (length > 0.0f) {
+    if (length > 0.0f)
+    {
         rotatedAxis.x /= length;
         rotatedAxis.y /= length;
         rotatedAxis.z /= length;

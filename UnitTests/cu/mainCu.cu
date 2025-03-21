@@ -3,7 +3,7 @@
 #include "Tools/CudaHelper.hpp"
 #include <Particle/Particle.hpp>
 
-__global__ void kernel( Particle* particle, const int N)
+__global__ void kernel( Spherical* particle, const int N)
 {
     uint idx = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -16,7 +16,7 @@ __global__ void kernel( Particle* particle, const int N)
 int main() {
     bool active = true;
     int N = 5;
-    std::vector<Particle> particles(N);
+    std::vector<Spherical> particles(N);
 
     for (int i = 0; i < N; i++) {
         particles[i].setId(i);
@@ -30,12 +30,12 @@ int main() {
         std::cout << "i = " << i << " Id: " <<particles[i].getId() << std::endl;
     }
 
-    Particle* devParticles = nullptr;
+    Spherical* devParticles = nullptr;
     hostToDevice(particles.data(), N, &devParticles);
 
     kernel<<<1, N>>>(devParticles, N);
     cudaDeviceSynchronize();
-    Particle* hostParticles = nullptr;
+    Spherical* hostParticles = nullptr;
     deviceToHost(devParticles, N, &hostParticles);
 
     for (int i = 0; i < N; i++) {

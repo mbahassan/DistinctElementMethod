@@ -5,24 +5,23 @@
 #ifndef EULERINTEGRATOR_CUH
 #define EULERINTEGRATOR_CUH
 
-#include <Particle/Particle.hpp>
+#include <Particle/Spherical.hpp>
 #include <Base/Base.cuh>
 
 class EulerIntegrator :public Base
 {
 public:
-  EulerIntegrator(const Particle* particle, float dt, int size);
+  EulerIntegrator(const Spherical* particle, float dt, int size);
 
   ~EulerIntegrator();
 
   void eulerIntegratorKernel() const ;
 
   private:
-  Particle* devParticle = nullptr;
+  Spherical* devParticle = nullptr;
 
   int size_;
 };
-
 
 
 #endif //EULERINTEGRATOR_CUH

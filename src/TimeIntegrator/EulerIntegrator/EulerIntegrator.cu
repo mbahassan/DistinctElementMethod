@@ -6,7 +6,7 @@
 #include "Tools/CudaHelper.hpp"
 #include "EulerIntegratorKernel.cuh"
 
-EulerIntegrator::EulerIntegrator(const Particle* particle, float dt, const int size)
+EulerIntegrator::EulerIntegrator(const Spherical* particle, float dt, const int size)
 {
     hostToDevice(particle, size_, &devParticle);
 

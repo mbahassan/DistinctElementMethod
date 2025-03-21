@@ -8,10 +8,14 @@
 #include <Particle/Shape/Shape.hpp>
 #include "Tools/AABB/AABB.hpp"
 
-class Sphere :public Shape
+class Sphere : public Shape
 {
 public:
-    Sphere();
+    __host__ __device__
+    Sphere()
+    {
+        setShapeType(SPHERE);
+    }
 
     explicit Sphere(float radius);
 
@@ -24,7 +28,14 @@ public:
     __host__ __device__
     float getRadius() const {return radius_;}
 
-    float getVolume() const;
+    __host__ __device__
+    float3 getMin() override {return make_float3(radius_, radius_ ,radius_);}
+
+    __host__ __device__
+    float3 getMax() override {return make_float3(radius_, radius_ ,radius_);}
+
+    __host__ __device__
+    float getVolume() override {return 4.0f * radius_*radius_*radius_ / 3.0f;}
 
     float3 supportMapping(const float3& direction) const
     {
@@ -35,7 +46,6 @@ public:
 private:
     float radius_ = 0;
 
-    AxisAlignedBoundingBox<float3> boundingBox_;
 };
 
 

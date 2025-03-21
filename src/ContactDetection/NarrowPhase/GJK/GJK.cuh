@@ -6,7 +6,7 @@
 #define GJK_CUH
 
 #include <random>
-#include "Particle/Particle.hpp"
+#include "Particle/Spherical.hpp"
 #include "ContactDetection/NarrowPhase/Simplex/Simplex.cuh"
 
 class GJK {
@@ -14,7 +14,7 @@ public:
     GJK() : rng(std::random_device{}()) {}
 
     // GJK algorithm to detect overlap between two particles
-    bool gjkOverlap(const Particle& particleA, const Particle& particleB) {
+    bool gjkOverlap(const Spherical& particleA, const Spherical& particleB) {
         // Initialize search direction as random unit vector
         float3 d = randomUnitVec();
 
@@ -76,7 +76,7 @@ public:
     }
 
     // Modified version of GJK that also returns the simplex
-    bool gjkOverlapWithSimplex(const Particle& particleA, const Particle& particleB, Simplex& simplex) {
+    bool gjkOverlapWithSimplex(const Spherical& particleA, const Spherical& particleB, Simplex& simplex) {
         // Initialize search direction as random unit vector
         float3 d = randomUnitVec();
 
@@ -154,7 +154,7 @@ private:
     }
 
     // Support function for GJK - Minkowski difference
-    float3 sATMB(const Particle& particleA, const Particle& particleB, const float3& direction) {
+    float3 sATMB(const Spherical& particleA, const Spherical& particleB, const float3& direction) {
         // Get the furthest point of particle A in direction
         float3 supportA = particleA.supportMapping(direction) + particleA.position;
 

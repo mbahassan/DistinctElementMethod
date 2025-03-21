@@ -5,20 +5,20 @@
 #ifndef GPUCLASS_H
 #define GPUCLASS_H
 
-#include <Particle/Particle.hpp>
+#include <Particle/Spherical.hpp>
 #include <Base/Base.cuh>
 
 class GpuClass: public Base
 {
 public:
-    GpuClass(const Particle* particle, int size);
+    GpuClass(const Spherical* particle, int size);
 
     ~GpuClass();
 
     void printHellow() const ;
 
 private:
-    Particle* devParticle = nullptr;
+    Spherical* devParticle = nullptr;
     int size_;
 };
 

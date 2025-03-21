@@ -1,11 +1,14 @@
 set(LIB_NAME Particle)
 
 set(SOURCES
-        Particle.cpp
-        Material/Material.cpp
+        Spherical.cpp
+        Polyhedral.cpp
+
         Shape/Shape.cpp
         Shape/Sphere/Sphere.cpp
-        Shape/Polyhedral/Polyhedral.cpp
+        Shape/Polytope/Polytope.cpp
+
+        Material/Material.cpp
         Material/ConfigMaterial.h
 )
 

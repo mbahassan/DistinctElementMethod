@@ -6,10 +6,10 @@
 
 #include "QuadTreeWriter.cuh"
 
-void Output::writeParticles(const std::vector<Particle> &particles, const int timestep) {
+void Output::writeParticles(const std::vector<Spherical> &particles, const int timestep) {
 
     // Create filename with zero-padded timestep
-    std::string filename = createFilename("particles", timestep, ".vtp");
+    std::string filename = createFilename("particles", timestep, "Spherical.vtp");
     std::ofstream vtpFile(filename);
 
     if (!vtpFile.is_open()) {
@@ -80,6 +80,172 @@ void Output::writeParticles(const std::vector<Particle> &particles, const int ti
         vtpFile << "</VTKFile>\n";
 
         vtpFile.close();
+}
+
+
+void Output::writeParticles(const std::vector<Polyhedral> &particles, const int timestep) {
+    // Create filename with zero-padded timestep
+    std::string filename = createFilename("polyparticles", timestep, ".vtp");
+    std::ofstream vtpFile(filename);
+
+    if (!vtpFile.is_open()) {
+        std::cerr << "Error: Could not open file " << filename << std::endl;
+        return;
+    }
+
+    // Calculate total number of vertices and faces across all particles
+    size_t totalVertices = 0;
+    size_t totalFaces = 0;
+    size_t totalIndices = 0;
+
+    for (const auto& particle : particles) {
+        totalVertices += particle.getVerticesCount();
+        totalFaces += particle.getFacesCount();
+
+        // Count total indices by adding up the number of vertices in each face
+        for (size_t i = 0; i < particle.getFacesCount(); i++) {
+            auto face = particle.getFace(i);
+            totalIndices += face.indices.size();
+        }
+    }
+
+    // XML Header
+    vtpFile << "<?xml version=\"1.0\"?>\n";
+    vtpFile << "<VTKFile type=\"PolyData\" version=\"1.0\" byte_order=\"LittleEndian\" header_type=\"UInt64\">\n";
+    vtpFile << "  <PolyData>\n";
+    vtpFile << "    <Piece NumberOfPoints=\"" << totalVertices << "\" NumberOfPolys=\"" << totalFaces << "\">\n";
+
+    // Points section
+    vtpFile << "      <Points>\n";
+    vtpFile << "        <DataArray type=\"Float32\" Name=\"Points\" NumberOfComponents=\"3\" format=\"ascii\">\n";
+
+    // Write all transformed vertices
+    size_t vertexOffset = 0;
+    for (const auto& particle : particles) {
+        const Quaternion& q = particle.getOrientation();
+        // Precompute the quaternion conjugate (inverse for unit quaternions)
+        Quaternion qConj = q.conjugate();
+
+        for (size_t i = 0; i < particle.getVerticesCount(); i++)
+        {
+            float3 v = particle.getVertex(i);
+
+            // Create a quaternion from the vertex (with w=0)
+            // Quaternion vQuat(0.0f, v.x, v.y, v.z);
+
+            // Perform Hamilton product: q * v * q^(-1)
+            // Quaternion rotatedVQuat = q.multiply(vQuat).multiply(qConj);
+            // Quaternion rotatedVQuat = q*(vQuat)*(qConj);
+            // Quaternion rotatedVQuat = rotateVector(v);
+
+            // Extract the vector part of the resulting quaternion
+            // float3 rotatedVertex = {rotatedVQuat.x, rotatedVQuat.y, rotatedVQuat.z};
+            float3 rotatedVertex = q.rotateVector(v);
+
+            // Apply translation
+            float3 transformedVertex = rotatedVertex + particle.position;
+
+            vtpFile << "          "
+                    << transformedVertex.x << " "
+                    << transformedVertex.y << " "
+                    << transformedVertex.z << "\n";
+        }
+    }
+
+    vtpFile << "        </DataArray>\n";
+    vtpFile << "      </Points>\n";
+
+    // Polys section (faces)
+    vtpFile << "      <Polys>\n";
+
+    // Connectivity array - lists all vertex indices for each face
+    vtpFile << "        <DataArray type=\"Int64\" Name=\"connectivity\" format=\"ascii\">\n";
+    vertexOffset = 0;
+    for (const auto& particle : particles) {
+        for (size_t i = 0; i < particle.getFacesCount(); i++) {
+            auto face = particle.getFace(i);
+            vtpFile << "          ";
+            for (size_t j = 0; j < face.indices.size(); j++) {
+                vtpFile << (face.indices[j] + vertexOffset) << " ";
+            }
+            vtpFile << "\n";
+        }
+        vertexOffset += particle.getVerticesCount();
+    }
+    vtpFile << "        </DataArray>\n";
+
+    // Offsets array - keeps track of where each face ends in connectivity
+    vtpFile << "        <DataArray type=\"Int64\" Name=\"offsets\" format=\"ascii\">\n";
+    size_t offset = 0;
+    for (const auto& particle : particles) {
+        for (size_t i = 0; i < particle.getFacesCount(); i++) {
+            auto face = particle.getFace(i);
+            offset += face.indices.size();
+            vtpFile << "          " << offset << "\n";
+        }
+    }
+    vtpFile << "        </DataArray>\n";
+    vtpFile << "      </Polys>\n";
+
+    // Point Data section
+    vtpFile << "      <PointData>\n";
+
+    // ParticleID attribute - helps identify which particle each vertex belongs to
+    vtpFile << "        <DataArray type=\"Int32\" Name=\"ParticleID\" format=\"ascii\" NumberOfComponents=\"1\">\n";
+    for (size_t particleIdx = 0; particleIdx < particles.size(); particleIdx++) {
+        const auto& particle = particles[particleIdx];
+        for (size_t i = 0; i < particle.getVerticesCount(); i++) {
+            vtpFile << "          " << particle.getId() << "\n";
+        }
+    }
+    vtpFile << "        </DataArray>\n";
+    vtpFile << "      </PointData>\n";
+
+    // Cell Data section (data for each face)
+    vtpFile << "      <CellData>\n";
+
+    // ParticleID attribute for cells
+    vtpFile << "        <DataArray type=\"Int32\" Name=\"ParticleID\" format=\"ascii\" NumberOfComponents=\"1\">\n";
+    for (size_t particleIdx = 0; particleIdx < particles.size(); particleIdx++) {
+        const auto& particle = particles[particleIdx];
+        for (size_t i = 0; i < particle.getFacesCount(); i++) {
+            vtpFile << "          " << particle.getId() << "\n";
+        }
+    }
+    vtpFile << "        </DataArray>\n";
+
+    // Velocity attribute
+    vtpFile << "        <DataArray type=\"Float32\" Name=\"Velocity\" format=\"ascii\" NumberOfComponents=\"3\">\n";
+    for (const auto& particle : particles) {
+        for (size_t i = 0; i < particle.getFacesCount(); i++) {
+            vtpFile << "          "
+                    << particle.velocity.x << " "
+                    << particle.velocity.y << " "
+                    << particle.velocity.z << "\n";
+        }
+    }
+    vtpFile << "        </DataArray>\n";
+
+    // Angular velocity attribute
+    vtpFile << "        <DataArray type=\"Float32\" Name=\"AngularVelocity\" format=\"ascii\" NumberOfComponents=\"3\">\n";
+    for (const auto& particle : particles) {
+        for (size_t i = 0; i < particle.getFacesCount(); i++) {
+            vtpFile << "          "
+                    << particle.angularVel.x << " "
+                    << particle.angularVel.y << " "
+                    << particle.angularVel.z << "\n";
+        }
+    }
+    vtpFile << "        </DataArray>\n";
+
+    vtpFile << "      </CellData>\n";
+
+    // Closing tags
+    vtpFile << "    </Piece>\n";
+    vtpFile << "  </PolyData>\n";
+    vtpFile << "</VTKFile>\n";
+
+    vtpFile.close();
 }
 
 void Output::writeTree(const QuadTree* quadtree, int timestep)

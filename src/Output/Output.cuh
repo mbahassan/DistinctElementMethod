@@ -7,7 +7,8 @@
 
 #include <vector>
 #include <ContactDetection/BroadPhase/QuadTree/QuadTree.h>
-#include <Particle/Particle.hpp>
+#include <Particle/Polyhedral.hpp>
+#include <Particle/Spherical.hpp>
 
 class Output {
 public:
@@ -19,7 +20,9 @@ public:
 
     ~Output() = default;
 
-    void writeParticles(const std::vector<Particle>& particles, int timestep);
+    void writeParticles(const std::vector<Spherical>& particles, int timestep);
+
+    void writeParticles(const std::vector<Polyhedral> &particles, int timestep);
 
     void writeTree(const QuadTree* quadtree, int timestep);
 

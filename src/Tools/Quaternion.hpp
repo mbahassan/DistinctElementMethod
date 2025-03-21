@@ -8,6 +8,38 @@
 #include <cmath>
 #include <cuda_runtime.h>
 
+
+// Add this struct for 3x3 matrix operations
+struct Matrix3x3 {
+    float m[3][3];
+
+    Matrix3x3() {
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                m[i][j] = (i == j) ? 1.0f : 0.0f;
+            }
+        }
+    }
+
+    // Set a specific element
+    void set(int i, int j, float value) {
+        m[i][j] = value;
+    }
+
+    // Get element
+    float get(int i, int j) const {
+        return m[i][j];
+    }
+
+    // Matrix determinant
+    float determinant() const {
+        return m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) -
+               m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) +
+               m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
+    }
+};
+
+
 class Quaternion {
 public:
     float w, x, y, z;
@@ -188,6 +220,12 @@ public:
             q1.y * ratioA + q2.y * ratioB,
             q1.z * ratioA + q2.z * ratioB
         );
+    }
+
+    // For printing
+    friend std::ostream& operator<<(std::ostream& os, const Quaternion& q) {
+        os << q.w << " + " << q.x << "i + " << q.y << "j + " << q.z << "k";
+        return os;
     }
 };
 

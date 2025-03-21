@@ -8,25 +8,30 @@
 #include <vector>
 #include <limits>
 #include <algorithm>
-#include "Particle/Particle.hpp"
+#include "Particle/Spherical.hpp"
 #include "ContactDetection/NarrowPhase/Simplex/Simplex.cuh"
+
+
 
 class EPA {
 public:
-    EPA() {}
 
     struct Contact {
-        Particle pi;
-        Particle pj;
+        Spherical pi;
+        Spherical pj;
         float3 normal;
         float3 contactPoint;
         float penetrationDepth;
     };
 
+    EPA() {}
+
+
+
     // EPA implementation
     static std::pair<float3, float> ePAlgorithm(
-        const Particle& particleA,
-        const Particle& particleB,
+        const Spherical& particleA,
+        const Spherical& particleB,
         Simplex& gjkSimplex)
     {
 
@@ -154,8 +159,8 @@ public:
 
     // Updated contact computation for arbitrary shapes
     static Contact computeContactEPA(
-        const Particle& particleA,
-        const Particle& particleB,
+        const Spherical& particleA,
+        const Spherical& particleB,
         Simplex& gjkSimplex) {
 
         Contact contact;
@@ -240,7 +245,7 @@ private:
     };
 
     // Support function for EPA - similar to GJK's support function
-    static float3 sATMB(const Particle& particleA, const Particle& particleB, const float3& direction) {
+    static float3 sATMB(const Spherical& particleA, const Spherical& particleB, const float3& direction) {
         // Get the furthest point of particle A in direction
         float3 supportA = particleA.supportMapping(direction) + particleA.position;
 

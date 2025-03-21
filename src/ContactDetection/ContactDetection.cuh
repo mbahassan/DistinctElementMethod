@@ -9,18 +9,19 @@
 #include "BroadPhase/BroadPhase.cuh"
 #include "NarrowPhase/NarrowPhase.cuh"
 #include "ContactDetection/BroadPhase/Config/TreeType.h"
-#include "Particle/Particle.hpp"
+#include "Particle/Spherical.hpp"
 #include "ContactConfig.h"
 
 
-class ContactDetection : ContactConfig {
+class ContactDetection : ContactConfig
+{
 public:
     explicit ContactDetection(const TreeType treeType): broadPhase_(treeType) {}
 
     explicit ContactDetection(const std::string& path): broadPhase_(path) {}
 
     // Run the complete contact detection pipeline
-    std::vector<EPA::Contact> detectContacts(std::vector<Particle>& particles) {
+    std::vector<EPA::Contact> detectContacts(std::vector<Spherical>& particles) {
         // Initialize the broad phase (build the spatial data structure)
         broadPhase_.initialize(particles);
 
@@ -32,19 +33,20 @@ public:
     }
 
     // You can also provide separate methods if needed
-    std::vector<PotentialContact> runBroadPhase(std::vector<Particle>& particles) {
+    std::vector<PotentialContact> runBroadPhase(std::vector<Spherical>& particles) {
         broadPhase_.initialize(particles);
         return broadPhase_.findPotentialContacts(particles);
     }
 
     std::vector<EPA::Contact> runNarrowPhase(
-        const std::vector<Particle>& particles,
+        const std::vector<Spherical>& particles,
         const std::vector<PotentialContact>& potentialContacts) {
         return narrowPhase_.detectCollisions(particles, potentialContacts);
     }
 
 private:
     BroadPhase broadPhase_;
+
     NarrowPhase narrowPhase_;
 };
 

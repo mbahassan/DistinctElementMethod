@@ -28,6 +28,14 @@ public:
   __host__ __device__
   ShapeType getShapeType() const {return shapeType_;}
 
+  __host__ __device__
+  virtual float3 getMin() = 0;
+
+  __host__ __device__
+  virtual float3 getMax() = 0;
+
+  __host__ __device__
+  virtual float getVolume() = 0;
 
 private:
   unsigned int id_ = 0;

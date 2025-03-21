@@ -1,10 +1,12 @@
 set(LIB_NAME Tools)
 
 set(SOURCES
+        Position/Position.cpp
         CudaHelper.cpp
         CudaHelper.hpp
         Quaternion.hpp
         AABB/AABB.hpp
+        tinyobjloader/objloader.cpp
 )
 
 add_library( ${LIB_NAME} SHARED  ${SOURCES})

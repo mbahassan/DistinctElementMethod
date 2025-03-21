@@ -2,22 +2,22 @@
 // Created by iqraa on 28-2-25.
 //
 
-#ifndef QUADTREEBUILDER_H
-#define QUADTREEBUILDER_H
+#ifndef OCTREEBUILDER_H
+#define OCTREEBUILDER_H
 
 #include <Particle/Spherical.hpp>
 
-#include "QuadTree.h"
-#include "ContactDetection/BroadPhase/ITreeBuilder.h"
+#include "Octree.h"
+#include <ContactDetection/BroadPhase/ITreeBuilder.h>
 #include <ContactDetection/BroadPhase/Config/TreeConfig.h>
 
 
-class QuadTreeBuilder : public ITreeBuilder<QuadTree, Spherical>
+class OctreeBuilder : public ITreeBuilder<Octree, Spherical>
 {
     public:
-    QuadTreeBuilder(const TreeConfig& treeConfig);
+    OctreeBuilder(const TreeConfig& treeConfig);
 
-    ~QuadTreeBuilder() override;
+    ~OctreeBuilder() override;
 
     void initialize(const int capacity) override;
 
@@ -33,4 +33,4 @@ class QuadTreeBuilder : public ITreeBuilder<QuadTree, Spherical>
 
 
 
-#endif //QUADTREEBUILDER_H
+#endif //OCTREEBUILDER_H

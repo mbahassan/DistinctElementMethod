@@ -9,15 +9,17 @@
 #include <iostream>
 #include <vector>
 #include <random>
-#include <Particle/Particle.hpp>
-#include <Tools/ArthmiticOperator/MathOperators.hpp>
+// #include <Particle/Spherical.hpp>
+#include <Particle/Polyhedral.hpp>
+
 
 class Insertion {
 public:
     Insertion() = default;
 
     // Initialize particles in a cubic grid arrangement
-    std::vector<Particle> fillGrid(std::vector<Particle>& particles,
+    template<typename ParticleType>
+    std::vector<ParticleType> fillGrid(std::vector<ParticleType>& particles,
                                                 float3 boxMin,
                                                 float3 boxMax,
                                                 float spacing) {
@@ -67,7 +69,8 @@ public:
     }
 
     // Initialize particles with random positions within a box
-    std::vector<Particle> fillRandomly(std::vector<Particle> particles,
+    template<typename ParticleType>
+    std::vector<ParticleType> fillRandomly(std::vector<ParticleType> particles,
                                                   float3 boxMin,
                                                   float3 boxMax,
                                                   float minSpacing) {
@@ -128,7 +131,8 @@ public:
         return particles;
     }
 
-    std::vector<Particle> fillGrid2D(std::vector<Particle>& particles,
+    template<typename ParticleType>
+    std::vector<ParticleType> fillGrid2D(std::vector<ParticleType>& particles,
                                  float3 boxMin,
                                  float3 boxMax,
                                  float spacing) {

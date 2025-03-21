@@ -8,7 +8,7 @@
 #include <vector>
 #include <ContactDetection/BroadPhase/BroadPhase.cuh>
 
-#include "Particle/Particle.hpp"
+#include "Particle/Spherical.hpp"
 #include "ContactDetection/NarrowPhase/GJK/GJK.cuh"
 #include "ContactDetection/NarrowPhase/EPA/EPA.cuh"
 
@@ -21,14 +21,14 @@ public:
 
     // Detect collisions using GJK + EPA
     std::vector<EPA::Contact> detectCollisions(
-        const std::vector<Particle>& particles,
+        const std::vector<Spherical>& particles,
         const std::vector<PotentialContact>& potentialContacts) {
 
         std::vector<EPA::Contact> contacts;
 
         for (const auto& potentialContact : potentialContacts) {
-            const Particle& particleA = particles[potentialContact.particleIdI];
-            const Particle& particleB = particles[potentialContact.particleIdJ];
+            const Spherical& particleA = particles[potentialContact.particleIdI];
+            const Spherical& particleB = particles[potentialContact.particleIdJ];
 
             // Skip if the particles are the same
             if (particleA.getId() == particleB.getId()) {

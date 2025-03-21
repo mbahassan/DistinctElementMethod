@@ -5,10 +5,10 @@
 #ifndef EULERINTEGRATORKERNEL_CUH
 #define EULERINTEGRATORKERNEL_CUH
 
-#include "Particle/Particle.hpp"
+#include "Particle/Spherical.hpp"
 #include "Tools/ArthmiticOperator/MathOperators.hpp"
 
-__global__ void EulerIntegratorKernel(Particle *particle, const float dt, const int size_)
+__global__ void EulerIntegratorKernel(Spherical *particle, const float dt, const int size_)
 {
   int idx = blockDim.x * blockIdx.x + threadIdx.x;
   if (idx >= size_) return;

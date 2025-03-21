@@ -10,7 +10,7 @@
 #include <ContactDetection/BroadPhase/QuadTree/QuadTreeBuilder.cuh>
 #include <ContactDetection/BroadPhase/Config/TreeType.h>
 #include <Output/QuadTreeWriter.cuh>
-#include <Particle/Particle.hpp>
+#include <Particle/Spherical.hpp>
 
 #include "Tools/CudaHelper.hpp"
 
@@ -37,13 +37,13 @@ public:
         treeType_ = treeType;
     }
 
-    void initialize(std::vector<Particle>& particles) {
+    void initialize(std::vector<Spherical>& particles) {
         if (treeType_ == QUADTREE) {
             size_t particlesCount = particles.size();
-            Particle* pointsHost = particles.data();
+            Spherical* pointsHost = particles.data();
             std::cout << "BroadPhase::initialize(): " << particlesCount << " particles\n";
 
-            Particle* points;
+            Spherical* points;
             hostToDevice(pointsHost, particlesCount, &points);
 
             treeBuilder = std::make_unique<QuadTreeBuilder>(treeConfig_);
@@ -55,7 +55,7 @@ public:
         }
     }
 
-    std::vector<PotentialContact> findPotentialContacts(std::vector<Particle>& points) {
+    std::vector<PotentialContact> findPotentialContacts(std::vector<Spherical>& points) {
         std::vector<PotentialContact> potentialContacts;
         std::unordered_set<uint64_t> processedPairs; // To avoid duplicate checks
 
@@ -106,7 +106,7 @@ public:
 private:
     static void checkContactsInLeaf(
         const QuadTree* leaf,
-        std::vector<Particle>& points,
+        std::vector<Spherical>& points,
         std::vector<PotentialContact>& contacts) {
 
         const int start = leaf->startId;
@@ -115,8 +115,8 @@ private:
         // Check for potential contacts between particles in this leaf
         for (int i = start; i < end; ++i) {
             for (int j = i + 1; j < end; ++j) {
-                Particle& p1 = points[i];
-                Particle& p2 = points[j];
+                Spherical& p1 = points[i];
+                Spherical& p2 = points[j];
 
                 if (p1.boundingBox.Check(p2.boundingBox.min) ||
                     p1.boundingBox.Check(p2.boundingBox.max)) {
@@ -133,7 +133,7 @@ private:
     static void checkContactsBetweenLeaves(
         const QuadTree* leafA,
         const QuadTree* leafB,
-        std::vector<Particle>& points,
+        std::vector<Spherical>& points,
         std::vector<PotentialContact>& contacts,
         std::unordered_set<uint64_t>& processedPairs) {
 
@@ -145,8 +145,8 @@ private:
         // Check for potential contacts between particles in the two leaves
         for (int i = startA; i < endA; ++i) {
             for (int j = startB; j < endB; ++j) {
-                Particle& p1 = points[i];
-                Particle& p2 = points[j];
+                Spherical& p1 = points[i];
+                Spherical& p2 = points[j];
 
                 // Create a unique pair ID to avoid duplicate checks
                 // (using min/max to ensure order doesn't matter)

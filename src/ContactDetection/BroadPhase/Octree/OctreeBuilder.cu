@@ -7,31 +7,31 @@
 #include <iostream>
 #include <chrono>
 
-#include "QuadTreeBuilder.cuh"
-#include "QuadTreeBuilderKernel.cuh"
+#include "OctreeBuilder.cuh"
+#include "OctreeBuilderKernel.cuh"
 #include "Tools/CudaHelper.hpp"
 #include "Tools/ArthmiticOperator/MathOperators.hpp"
 
 
-QuadTreeBuilder::QuadTreeBuilder(const TreeConfig& treeConfig)
+OctreeBuilder::OctreeBuilder(const TreeConfig& treeConfig)
     : treeConfig {treeConfig}
 {
 }
 
-void QuadTreeBuilder::initialize(const int capacity)
+void OctreeBuilder::initialize(const int capacity)
 {
     cudaMalloc((void**)&pointsExch, capacity * sizeof(Spherical));
     GET_CUDA_ERROR("cudaMalloc() pointsExch");
 
     // tree:
     const int maxNodes = treeConfig.GetNodesCount();
-    cudaMallocManaged((void**)&tree, maxNodes * sizeof(QuadTree)); // plus one for the root
+    cudaMallocManaged((void**)&tree, maxNodes * sizeof(Octree)); // plus one for the root
     GET_CUDA_ERROR("cudaMallocManaged() tree");
     cudaDeviceSynchronize();
     GET_CUDA_ERROR("cudaDeviceSynchronize");
 }
 
-void QuadTreeBuilder::build(Spherical* points, const int size)
+void OctreeBuilder::build(Spherical* points, const int size)
 {
     reset();
 
@@ -49,7 +49,7 @@ void QuadTreeBuilder::build(Spherical* points, const int size)
 
     cudaMemcpy(pointsExch, points, size * sizeof(Spherical), cudaMemcpyDeviceToDevice);
 
-    QuadTreeKernel<128><<<1, treeConfig.threadsPerBlock, warpsPerBlock * 4 * sizeof(int)>>>
+    OctreeKernel<128><<<1, treeConfig.threadsPerBlock, warpsPerBlock * 4 * sizeof(int)>>>
     (
         tree,
         points,
@@ -64,7 +64,7 @@ void QuadTreeBuilder::build(Spherical* points, const int size)
     std::cout << "Kernel() duration: " <<
         (std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count()) << std::endl;
 
-    QuadTree* tree2 = tree;
+    Octree* tree2 = tree;
     int totalCount = 0;
 
     for (int depth = 0; depth < treeConfig.maxDepth; ++depth)
@@ -72,7 +72,7 @@ void QuadTreeBuilder::build(Spherical* points, const int size)
         const auto leafs = getNumNodesInCurrentDepth<2>(depth);
         for (int leaf = 0; leaf < leafs; ++leaf)
         {
-            const QuadTree* subTree = &tree2[leaf];
+            const Octree* subTree = &tree2[leaf];
 
             if ((subTree->particlesCountInNode() < treeConfig.minPointsPerNode ||
                 depth == treeConfig.maxDepth - 1) && subTree->particlesCountInNode() > 0)
@@ -92,7 +92,7 @@ void QuadTreeBuilder::build(Spherical* points, const int size)
     }
 }
 
-void QuadTreeBuilder::reset()
+void OctreeBuilder::reset()
 {
     std::cout << "Reset()" << std::endl;
     const int maxNodes = treeConfig.GetNodesCount();
@@ -107,7 +107,7 @@ void QuadTreeBuilder::reset()
     }
 }
 
-QuadTreeBuilder::~QuadTreeBuilder()
+OctreeBuilder::~OctreeBuilder()
 {
     cudaFree(pointsExch);
     cudaFree(tree);

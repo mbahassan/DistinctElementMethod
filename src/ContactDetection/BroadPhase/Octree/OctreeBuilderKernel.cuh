@@ -1,17 +1,71 @@
 //
 // Created by iqraa on 28-2-25.
 //
-#ifndef QUADTREEBUILDERKERNEL_CUH
-#define QUADTREEBUILDERKERNEL_CUH
+
+#ifndef OCTREEBUILDERKERNEL_CUH
+#define OCTREEBUILDERKERNEL_CUH
+
+////////////////////////////////////////////////////////////////////////////////
+// Build a quadtree on the GPU. Use CUDA Dynamic Parallelism.
+//
+// The algorithm works as follows. The host (CPU) launches one block of
+// NUM_THREADS_PER_BLOCK threads. That block will do the following steps:
+//
+// 1- Check the number of points and its depth.
+//
+// We impose a maximum depth to the tree and a minimum number of points per
+// node. If the maximum depth is exceeded or the minimum number of points is
+// reached. The threads in the block exit.
+//
+// Before exiting, they perform a buffer swap if it is needed. Indeed, the
+// algorithm uses two buffers to permute the points and make sure they are
+// properly distributed in the quadtree. By design we want all points to be
+// in the first buffer of points at the end of the algorithm. It is the reason
+// why we may have to swap the buffer before leavin (if the points are in the
+// 2nd buffer).
+//
+// 2- Count the number of points in each child.
+//
+// If the depth is not too high and the number of points is sufficient, the
+// block has to dispatch the points into four geometrical buckets: Its
+// children. For that purpose, we compute the center of the bounding box and
+// count the number of points in each quadrant.
+//
+// The set of points is divided into sections. Each section is given to a
+// warp of threads (32 threads). Warps use __ballot and __popc intrinsics
+// to count the points. See the Programming Guide for more information about
+// those functions.
+//
+// 3- Scan the warps' results to know the "global" numbers.
+//
+// Warps work independently from each other. At the end, each warp knows the
+// number of points in its section. To know the numbers for the block, the
+// block has to run a scan/reduce at the block level. It's a traditional
+// approach. The implementation in that sample is not as optimized as what
+// could be found in fast radix sorts, for example, but it relies on the same
+// idea.
+//
+// 4- Move points.
+//
+// Now that the block knows how many points go in each of its 4 children, it
+// remains to dispatch the points. It is straightforward.
+//
+// 5- Launch new blocks.
+//
+// The block launches four new blocks: One per children. Each of the four blocks
+// will apply the same algorithm.
 
 #include <thrust/random.h>
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
 #include <cooperative_groups.h>
+
 namespace cg = cooperative_groups;
 
+
+
 template<int NUM_THREADS_PER_BLOCK>
-__global__ void QuadTreeKernel(QuadTree *nodes, Spherical *points, Spherical *pointsExch, TreeConfig params) {
+__global__ void OctreeKernel(Octree *nodes, Spherical *points, Spherical *pointsExch, TreeConfig params) {
     // Handle to thread block group
     cg::thread_block cta = cg::this_thread_block();
     // The number of warps in a block.
@@ -36,7 +90,7 @@ __global__ void QuadTreeKernel(QuadTree *nodes, Spherical *points, Spherical *po
     int lane_mask_lt = (1 << lane_id) - 1;
 
     // The current node.
-    QuadTree &node = nodes[blockIdx.x];
+    Octree &node = nodes[blockIdx.x];
 
     // The number of points in the node.
     int num_points = node.endId - node.startId;
@@ -63,6 +117,20 @@ __global__ void QuadTreeKernel(QuadTree *nodes, Spherical *points, Spherical *po
     const auto &bbox = node.bounds;
 
     float3 center = bbox.getCenter();
+    // Define the child quadrants
+    AxisAlignedBoundingBox<float2> childBounds[4];
+    // Top-left
+    childBounds[0].min = {bbox.min.x, center.y};
+    childBounds[0].max = {center.x, bbox.max.y};
+    // Top-right
+    childBounds[1].min = {center.x, center.y};
+    childBounds[1].max = {bbox.max.x, bbox.max.y};
+    // Bottom-left
+    childBounds[2].min = {bbox.min.x, bbox.min.y};
+    childBounds[2].max = {center.x, center.y};
+    // Bottom-right
+    childBounds[3].min = {center.x, bbox.min.y};
+    childBounds[3].max = {bbox.max.x, center.y};
 
     // Find how many points to give to each warp.
     int num_points_per_warp = max(warpSize, (num_points + NUM_WARPS_PER_BLOCK - 1) / NUM_WARPS_PER_BLOCK);
@@ -92,30 +160,44 @@ __global__ void QuadTreeKernel(QuadTree *nodes, Spherical *points, Spherical *po
         // Is it still an active thread?
         bool is_active = range_it < range_end;
 
-        auto bbCenter = (inputPoints[range_it].boundingBox.min + inputPoints[range_it].boundingBox.max) /2.0f;
+        // Check if particle's bounding box overlaps with each quadrant
+        if (is_active) {
+            // Get the particle's bounding box
+            const auto& particleBBox = inputPoints[range_it].boundingBox;
 
-        // Load the coordinates of the point.
-        float3 p = is_active ? bbCenter : make_float3(0.0f, 0.0f,0.0f);
+            // A particle is counted in a quadrant if its bounding box overlaps with that quadrant
+            // Top-left quadrant
+            bool overlapsTopLeft = !(particleBBox.max.x <= childBounds[0].min.x ||
+                                     particleBBox.min.x >= childBounds[0].max.x ||
+                                     particleBBox.max.y <= childBounds[0].min.y ||
+                                     particleBBox.min.y >= childBounds[0].max.y);
+            int num_pts = __popc(tile32.ballot(overlapsTopLeft));
+            warp_cnts[0] += tile32.shfl(num_pts, 0);
 
-        // Count top-left points.
-        int num_pts =
-                __popc(tile32.ballot(is_active && p.x < center.x && p.y >= center.y));
-        warp_cnts[0] += tile32.shfl(num_pts, 0);
+            // Top-right quadrant
+            bool overlapsTopRight = !(particleBBox.max.x <= childBounds[1].min.x ||
+                                      particleBBox.min.x >= childBounds[1].max.x ||
+                                      particleBBox.max.y <= childBounds[1].min.y ||
+                                      particleBBox.min.y >= childBounds[1].max.y);
+            num_pts = __popc(tile32.ballot(overlapsTopRight));
+            warp_cnts[1] += tile32.shfl(num_pts, 0);
 
-        // Count top-right points.
-        num_pts =
-                __popc(tile32.ballot(is_active && p.x >= center.x && p.y >= center.y));
-        warp_cnts[1] += tile32.shfl(num_pts, 0);
+            // Bottom-left quadrant
+            bool overlapsBottomLeft = !(particleBBox.max.x <= childBounds[2].min.x ||
+                                        particleBBox.min.x >= childBounds[2].max.x ||
+                                        particleBBox.max.y <= childBounds[2].min.y ||
+                                        particleBBox.min.y >= childBounds[2].max.y);
+            num_pts = __popc(tile32.ballot(overlapsBottomLeft));
+            warp_cnts[2] += tile32.shfl(num_pts, 0);
 
-        // Count bottom-left points.
-        num_pts =
-                __popc(tile32.ballot(is_active && p.x < center.x && p.y < center.y));
-        warp_cnts[2] += tile32.shfl(num_pts, 0);
-
-        // Count bottom-right points.
-        num_pts =
-                __popc(tile32.ballot(is_active && p.x >= center.x && p.y < center.y));
-        warp_cnts[3] += tile32.shfl(num_pts, 0);
+            // Bottom-right quadrant
+            bool overlapsBottomRight = !(particleBBox.max.x <= childBounds[3].min.x ||
+                                         particleBBox.min.x >= childBounds[3].max.x ||
+                                         particleBBox.max.y <= childBounds[3].min.y ||
+                                         particleBBox.min.y >= childBounds[3].max.y);
+            num_pts = __popc(tile32.ballot(overlapsBottomRight));
+            warp_cnts[3] += tile32.shfl(num_pts, 0);
+        }
     }
 
     if (tile32.thread_rank() == 0) {
@@ -202,55 +284,51 @@ __global__ void QuadTreeKernel(QuadTree *nodes, Spherical *points, Spherical *po
             // Is it still an active thread?
             bool is_active = range_it < range_end;
 
-            // using BoundingBox of the particle instead of the center
-            auto bbCenter = (inputPoints[range_it].boundingBox.min + inputPoints[range_it].boundingBox.max) /2.0f;
+            if (is_active) {
+                Spherical particle = inputPoints[range_it];
+                const auto& particleBBox = particle.boundingBox;
 
-            // Load the coordinates of the point.
-            float3 p = is_active ? bbCenter : make_float3(0.0f, 0.0f,0.0f);
+                // Check overlaps with each quadrant and place particle in all overlapping quadrants
+                // Top-left quadrant
+                bool overlapsTopLeft = !(particleBBox.max.x <= childBounds[0].min.x ||
+                                         particleBBox.min.x >= childBounds[0].max.x ||
+                                         particleBBox.max.y <= childBounds[0].min.y ||
+                                         particleBBox.min.y >= childBounds[0].max.y);
+                int vote = tile32.ballot(overlapsTopLeft);
+                int dest = warp_cnts[0] + __popc(vote & lane_mask_lt);
+                if (overlapsTopLeft) outputPoints[dest] = particle;
+                warp_cnts[0] += tile32.shfl(__popc(vote), 0);
 
-            // Get the full particle data
-            // Particle particle = is_active ? inputPoints[range_it] : Particle();
+                // Top-right quadrant
+                bool overlapsTopRight = !(particleBBox.max.x <= childBounds[1].min.x ||
+                                          particleBBox.min.x >= childBounds[1].max.x ||
+                                          particleBBox.max.y <= childBounds[1].min.y ||
+                                          particleBBox.min.y >= childBounds[1].max.y);
+                vote = tile32.ballot(overlapsTopRight);
+                dest = warp_cnts[1] + __popc(vote & lane_mask_lt);
+                if (overlapsTopRight) outputPoints[dest] = particle;
+                warp_cnts[1] += tile32.shfl(__popc(vote), 0);
 
+                // Bottom-left quadrant
+                bool overlapsBottomLeft = !(particleBBox.max.x <= childBounds[2].min.x ||
+                                            particleBBox.min.x >= childBounds[2].max.x ||
+                                            particleBBox.max.y <= childBounds[2].min.y ||
+                                            particleBBox.min.y >= childBounds[2].max.y);
+                vote = tile32.ballot(overlapsBottomLeft);
+                dest = warp_cnts[2] + __popc(vote & lane_mask_lt);
+                if (overlapsBottomLeft) outputPoints[dest] = particle;
+                warp_cnts[2] += tile32.shfl(__popc(vote), 0);
 
-            // Count top-left points.
-            bool pred = is_active && p.x < center.x && p.y >= center.y;
-            int vote = tile32.ballot(pred);
-            int dest = warp_cnts[0] + __popc(vote & lane_mask_lt);
-
-            // if (pred) out_points.set_point(dest, p);
-            if (pred) outputPoints[dest].position = p;
-
-            warp_cnts[0] += tile32.shfl(__popc(vote), 0);
-
-            // Count top-right points.
-            pred = is_active && p.x >= center.x && p.y >= center.y;
-            vote = tile32.ballot(pred);
-            dest = warp_cnts[1] + __popc(vote & lane_mask_lt);
-
-            // if (pred) out_points.set_point(dest, p);
-            if (pred) outputPoints[dest].position = p;
-
-            warp_cnts[1] += tile32.shfl(__popc(vote), 0);
-
-            // Count bottom-left points.
-            pred = is_active && p.x < center.x && p.y < center.y;
-            vote = tile32.ballot(pred);
-            dest = warp_cnts[2] + __popc(vote & lane_mask_lt);
-
-            // if (pred) out_points.set_point(dest, p);
-            if (pred) outputPoints[dest].position = p;
-
-            warp_cnts[2] += tile32.shfl(__popc(vote), 0);
-
-            // Count bottom-right points.
-            pred = is_active && p.x >= center.x && p.y < center.y;
-            vote = tile32.ballot(pred);
-            dest = warp_cnts[3] + __popc(vote & lane_mask_lt);
-
-            // if (pred) out_points.set_point(dest, p);
-            if (pred) outputPoints[dest].position = p;
-
-            warp_cnts[3] += tile32.shfl(__popc(vote), 0);
+                // Bottom-right quadrant
+                bool overlapsBottomRight = !(particleBBox.max.x <= childBounds[3].min.x ||
+                                             particleBBox.min.x >= childBounds[3].max.x ||
+                                             particleBBox.max.y <= childBounds[3].min.y ||
+                                             particleBBox.min.y >= childBounds[3].max.y);
+                vote = tile32.ballot(overlapsBottomRight);
+                dest = warp_cnts[3] + __popc(vote & lane_mask_lt);
+                if (overlapsBottomRight) outputPoints[dest] = particle;
+                warp_cnts[3] += tile32.shfl(__popc(vote), 0);
+            }
         }
     }
     cg::sync(cta);
@@ -272,7 +350,7 @@ __global__ void QuadTreeKernel(QuadTree *nodes, Spherical *points, Spherical *po
         // The last thread launches new blocks.
         if (threadIdx.x == NUM_THREADS_PER_BLOCK - 1) {
             // The children.
-            QuadTree *children = &nodes[params.numNodesAtThisLevel - (node.id & ~3)];
+            Octree *children = &nodes[params.numNodesAtThisLevel - (node.id & ~3)];
 
             // The offsets of the children at their level.
             int child_offset = 4 * node.id;
@@ -315,7 +393,7 @@ __global__ void QuadTreeKernel(QuadTree *nodes, Spherical *points, Spherical *po
             children[child_offset + 3].endId = s_num_pts[3][warp_id];
 
             // Launch 4 children.
-            QuadTreeKernel<NUM_THREADS_PER_BLOCK><<<
+            OctreeKernel<NUM_THREADS_PER_BLOCK><<<
                     4, NUM_THREADS_PER_BLOCK, 4 * NUM_WARPS_PER_BLOCK * sizeof(int)>>>(
                         &children[child_offset], pointsExch, points, TreeConfig(params, true));
         }
@@ -323,4 +401,4 @@ __global__ void QuadTreeKernel(QuadTree *nodes, Spherical *points, Spherical *po
 }
 
 
-#endif // QUADTREEBUILDERKERNEL_CUH
+#endif //OCTREEBUILDERKERNEL_CUH

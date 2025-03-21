@@ -6,7 +6,7 @@
 #include "GpuClassKernel.cuh"
 #include <Tools/CudaHelper.hpp>
 
-GpuClass::GpuClass(const Particle* particle, const int size):
+GpuClass::GpuClass(const Spherical* particle, const int size):
 size_(size)
 {
     hostToDevice(particle, size_, &devParticle);

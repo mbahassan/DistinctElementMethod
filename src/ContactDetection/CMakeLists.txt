@@ -2,6 +2,9 @@ set(LIB_NAME ContactDetection)
 
 set(SOURCES
         ContactDetection.cu
+        BroadPhase/Octree/OctreeBuilder.cu
+        BroadPhase/Octree/OctreeBuilderKernel.cuh
+
         BroadPhase/QuadTree/QuadTreeBuilder.cu
         BroadPhase/QuadTree/QuadTreeBuilderKernel.cuh
 
