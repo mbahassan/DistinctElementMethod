@@ -6,7 +6,7 @@
 
 #include "Material/Material.hpp"
 #include "Shape/Polytope/Polytope.hpp"
-#include "Tools/Quaternion.hpp"
+#include "Tools/quaternion/quaternion.hpp"
 #include "Tools/AABB/AABB.hpp"
 #include <Tools/ArthmiticOperator/MathOperators.hpp>
 #include <Tools/Position/Position.h>
@@ -17,28 +17,33 @@
 class Polyhedral : public Material, public Polytope
 {
 public:
-    // Add this constructor
+
+    __host__ __device__
     Polyhedral() = default;
 
     __host__ __device__
-    // Polyhedral() = default;
-
-    Polyhedral(const Material& material, const Polytope& shape);
-
-    __host__ __device__
     Polyhedral(const Polyhedral &);
-
-    Polyhedral(const Material& material, Polytope& shape);
 
     __host__ __device__
     Polyhedral(Polyhedral &particle)
     {
         position = particle.position;
         velocity = particle.velocity;
+        acceleration = particle.acceleration;
+        orientation = particle.orientation;
+        angularVel = particle.angularVel;
+        angularAcc = particle.angularAcc;
+        force = particle.force;
+        boundingBox = particle.boundingBox;
 
         boundingBox.min = particle.position - particle.getMin();
         boundingBox.max = particle.position + particle.getMax();
     }
+
+    Polyhedral(const Material& material, const Polytope& shape);
+
+    Polyhedral(Material& material, Polytope& shape);
+
 
     // Other methods remain the same ...
     ~Polyhedral() override = default;
@@ -73,16 +78,16 @@ public:
 private:
 
     // Allow Position<Polyhedral> to access private members [update(float3)].
-    friend class Position<Polyhedral>;
+    // friend class Position<Polyhedral>;
 
-    void update(float3 updatedPosition) {
-        // Add the new position to all vertices
-
-        // Update center of mass
-
-        // Update BBox
-        return ;
-    }
+    // void update(float3 updatedPosition) {
+    //     // Add the new position to all vertices
+    //
+    //     // Update center of mass
+    //
+    //     // Update BBox
+    //     return ;
+    // }
 
 };
 

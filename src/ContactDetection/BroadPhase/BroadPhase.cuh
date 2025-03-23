@@ -20,10 +20,13 @@ struct PotentialContact
     int particleIdJ;
 };
 
+
+template<class ParticleType>
 class BroadPhase {
 public:
 
-    explicit BroadPhase(const std::string& path) {
+    explicit BroadPhase(const std::string& path)
+    {
         const nlohmann::json data = Parser::readJson(path);
 
         treeType_ = data["ContactDetection"]["BroadPhase"]["treeType"];
@@ -37,16 +40,19 @@ public:
         treeType_ = treeType;
     }
 
-    void initialize(std::vector<Spherical>& particles) {
-        if (treeType_ == QUADTREE) {
+
+    void initialize(std::vector<ParticleType>& particles)
+    {
+        if (treeType_ == QUADTREE)
+        {
             size_t particlesCount = particles.size();
-            Spherical* pointsHost = particles.data();
+            ParticleType* pointsHost = particles.data();
             std::cout << "BroadPhase::initialize(): " << particlesCount << " particles\n";
 
-            Spherical* points;
+            ParticleType* points;
             hostToDevice(pointsHost, particlesCount, &points);
 
-            treeBuilder = std::make_unique<QuadTreeBuilder>(treeConfig_);
+            treeBuilder = std::make_unique<QuadTreeBuilder<ParticleType>>(treeConfig_);
             treeBuilder->initialize(particlesCount);
             treeBuilder->build(points, particlesCount);
 
@@ -55,7 +61,9 @@ public:
         }
     }
 
-    std::vector<PotentialContact> findPotentialContacts(std::vector<Spherical>& points) {
+
+    std::vector<PotentialContact> getPotentialContacts(std::vector<ParticleType>& points) const
+    {
         std::vector<PotentialContact> potentialContacts;
         std::unordered_set<uint64_t> processedPairs; // To avoid duplicate checks
 
@@ -81,7 +89,8 @@ public:
         }
 
         // Second pass: check contacts between particles in each leaf and with particles in neighboring leaves
-        for (size_t i = 0; i < leafNodes.size(); ++i) {
+        for (size_t i = 0; i < leafNodes.size(); ++i)
+        {
             const QuadTree* leafA = leafNodes[i].first;
             int nodeIdxA = leafNodes[i].second;
 
@@ -104,9 +113,10 @@ public:
     }
 
 private:
+
     static void checkContactsInLeaf(
         const QuadTree* leaf,
-        std::vector<Spherical>& points,
+        std::vector<ParticleType>& points,
         std::vector<PotentialContact>& contacts) {
 
         const int start = leaf->startId;
@@ -115,8 +125,8 @@ private:
         // Check for potential contacts between particles in this leaf
         for (int i = start; i < end; ++i) {
             for (int j = i + 1; j < end; ++j) {
-                Spherical& p1 = points[i];
-                Spherical& p2 = points[j];
+                ParticleType& p1 = points[i];
+                ParticleType& p2 = points[j];
 
                 if (p1.boundingBox.Check(p2.boundingBox.min) ||
                     p1.boundingBox.Check(p2.boundingBox.max)) {
@@ -130,10 +140,11 @@ private:
         }
     }
 
+
     static void checkContactsBetweenLeaves(
         const QuadTree* leafA,
         const QuadTree* leafB,
-        std::vector<Spherical>& points,
+        std::vector<ParticleType>& points,
         std::vector<PotentialContact>& contacts,
         std::unordered_set<uint64_t>& processedPairs) {
 
@@ -145,8 +156,8 @@ private:
         // Check for potential contacts between particles in the two leaves
         for (int i = startA; i < endA; ++i) {
             for (int j = startB; j < endB; ++j) {
-                Spherical& p1 = points[i];
-                Spherical& p2 = points[j];
+                ParticleType& p1 = points[i];
+                ParticleType& p2 = points[j];
 
                 // Create a unique pair ID to avoid duplicate checks
                 // (using min/max to ensure order doesn't matter)
@@ -190,7 +201,9 @@ private:
 
     TreeType  treeType_;
     TreeConfig treeConfig_;
-    std::unique_ptr<QuadTreeBuilder> treeBuilder;
+    std::unique_ptr<QuadTreeBuilder<ParticleType>> treeBuilder;
+
 };
+
 
 #endif // BROADPHASE_CUH

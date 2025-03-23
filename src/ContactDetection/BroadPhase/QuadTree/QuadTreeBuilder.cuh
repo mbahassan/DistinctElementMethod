@@ -6,31 +6,33 @@
 #define QUADTREEBUILDER_H
 
 #include <Particle/Spherical.hpp>
+#include <Particle/Polyhedral.hpp>
 
 #include "QuadTree.h"
 #include "ContactDetection/BroadPhase/ITreeBuilder.h"
 #include <ContactDetection/BroadPhase/Config/TreeConfig.h>
 
-
-class QuadTreeBuilder : public ITreeBuilder<QuadTree, Spherical>
+template<typename ParticleType>
+class QuadTreeBuilder : public ITreeBuilder<QuadTree, ParticleType>
 {
     public:
     QuadTreeBuilder(const TreeConfig& treeConfig);
 
     ~QuadTreeBuilder() override;
 
-    void initialize(const int capacity) override;
+    void initialize(int capacity) override;
 
-    void build(Spherical* point, const int size) override;
+    void build(ParticleType* point, int size) override;
 
     void reset() override;
 
     private:
-    Spherical* pointsExch;
+    ParticleType* pointsExch;
 
     TreeConfig treeConfig;
 };
 
-
+template class QuadTreeBuilder<Spherical>;
+// template class QuadTreeBuilder<Polyhedral>;
 
 #endif //QUADTREEBUILDER_H

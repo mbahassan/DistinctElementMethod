@@ -4,9 +4,11 @@ set(SOURCES
         Position/Position.cpp
         CudaHelper.cpp
         CudaHelper.hpp
-        Quaternion.hpp
+        quaternion/quaternion.hpp
         AABB/AABB.hpp
         tinyobjloader/objloader.cpp
+        objreader/ObjReader.cpp
+        objreader/ObjReader.h
 )
 
 add_library( ${LIB_NAME} SHARED  ${SOURCES})

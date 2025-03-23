@@ -11,7 +11,7 @@ Material(material), Polytope(shape) {
 }
 
 
-Polyhedral::Polyhedral(const Material& material, Polytope& shape):
+Polyhedral::Polyhedral(Material& material, Polytope& shape):
 Material(material), Polytope(shape)
 {
     boundingBox.min = position + Polytope::getMin();

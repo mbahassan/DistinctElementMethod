@@ -14,13 +14,10 @@
 #include <Particle/Shape/Shape.hpp>
 #include <Tools/ArthmiticOperator/MathOperators.hpp>
 #include <Tools/tinyobjloader/objloader.h>
+#include <thrust/host_vector.h>
+#include "Tools/quaternion/quaternion.hpp"
 
-#include "Tools/Quaternion.hpp"
-#include "Tools/AABB/AABB.hpp"
 
-struct Face {
-    std::vector<int> indices; // Support triangles or quads
-};
 
 class Polytope : public Shape {
 public:
@@ -37,7 +34,7 @@ public:
         std::string warn, err;
 
         // Load the OBJ file
-        bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, file.c_str());
+        bool ret = LoadObj(&attrib, &shapes, &materials, &warn, &err, file.c_str());
 
         if (!warn.empty()) std::cout << "WARN: " << warn << std::endl;
         if (!err.empty()) std::cerr << "ERR: " << err << std::endl;
@@ -88,7 +85,7 @@ public:
         computeVolumeAndCoM(vertices, faces, volume, centerOfMass);
     }
 
-    ~Polytope() = default;
+    ~Polytope() override = default;
 
     float3 supportMapping(const float3 &direction) const {
         float maxDistance = vertices[0] & direction;
@@ -116,16 +113,12 @@ public:
     __host__ __device__
     float3 getCenterOfMass() const { return centerOfMass; }
 
-    __host__ __device__
     int getVerticesCount() const { return vertices.size(); }
 
-    __host__ __device__
     int getFacesCount() const { return faces.size(); }
 
-    __host__ __device__
     Face getFace(int i) const { return faces[i]; }
 
-    __host__ __device__
     float3 getVertex(int i) const { return vertices[i]; }
 
     // Method to get the orientation

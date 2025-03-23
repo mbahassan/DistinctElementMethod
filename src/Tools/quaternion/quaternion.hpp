@@ -54,7 +54,7 @@ public:
     __host__ __device__ Quaternion(const Quaternion& q)
         : w(q.w), x(q.x), y(q.y), z(q.z) {}
 
-    // Identity quaternion
+    // Identity Quaternion
     __host__ __device__ static Quaternion identity()
     {
         return {1.0f, 0.0f, 0.0f, 0.0f};
@@ -96,7 +96,7 @@ public:
     }
 
     __host__ __device__ float3 rotateVector(const float3& v) const {
-        // Convert vector to quaternion
+        // Convert vector to Quaternion
         Quaternion p(0.0f, v.x, v.y, v.z);
 
         // Perform rotation: q * p * q^(-1)

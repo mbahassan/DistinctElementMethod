@@ -10,8 +10,9 @@
 #include <cooperative_groups.h>
 namespace cg = cooperative_groups;
 
-template<int NUM_THREADS_PER_BLOCK>
-__global__ void QuadTreeKernel(QuadTree *nodes, Spherical *points, Spherical *pointsExch, TreeConfig params) {
+template<int NUM_THREADS_PER_BLOCK, class ParticleType>
+__global__ void QuadTreeKernel(QuadTree *nodes, ParticleType *points, ParticleType *pointsExch, TreeConfig params)
+{
     // Handle to thread block group
     cg::thread_block cta = cg::this_thread_block();
     // The number of warps in a block.
@@ -82,8 +83,8 @@ __global__ void QuadTreeKernel(QuadTree *nodes, Spherical *points, Spherical *po
     // Get input and output buffers based on depth
     // Even depths: read from points, write to pointsExch
     // Odd depths: read from pointsExch, write to points
-    Spherical *inputPoints = (params.depth % 2 == 0) ? points : pointsExch;
-    Spherical *outputPoints = (params.depth % 2 == 0) ? pointsExch : points;
+    ParticleType *inputPoints = (params.depth % 2 == 0) ? points : pointsExch;
+    ParticleType *outputPoints = (params.depth % 2 == 0) ? pointsExch : points;
 
     cg::thread_block_tile<32> tile32 = cg::tiled_partition<32>(cta);
     // Compute the number of points.
@@ -315,7 +316,7 @@ __global__ void QuadTreeKernel(QuadTree *nodes, Spherical *points, Spherical *po
             children[child_offset + 3].endId = s_num_pts[3][warp_id];
 
             // Launch 4 children.
-            QuadTreeKernel<NUM_THREADS_PER_BLOCK><<<
+            QuadTreeKernel<NUM_THREADS_PER_BLOCK, ParticleType><<<
                     4, NUM_THREADS_PER_BLOCK, 4 * NUM_WARPS_PER_BLOCK * sizeof(int)>>>(
                         &children[child_offset], pointsExch, points, TreeConfig(params, true));
         }

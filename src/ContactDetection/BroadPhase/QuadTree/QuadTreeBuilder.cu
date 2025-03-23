@@ -12,46 +12,48 @@
 #include "Tools/CudaHelper.hpp"
 #include "Tools/ArthmiticOperator/MathOperators.hpp"
 
-
-QuadTreeBuilder::QuadTreeBuilder(const TreeConfig& treeConfig)
+template<typename ParticleType>
+QuadTreeBuilder<ParticleType>::QuadTreeBuilder(const TreeConfig& treeConfig)
     : treeConfig {treeConfig}
 {
 }
 
-void QuadTreeBuilder::initialize(const int capacity)
+template<typename ParticleType>
+void QuadTreeBuilder<ParticleType>::initialize(const int capacity)
 {
     cudaMalloc((void**)&pointsExch, capacity * sizeof(Spherical));
     GET_CUDA_ERROR("cudaMalloc() pointsExch");
 
     // tree:
     const int maxNodes = treeConfig.GetNodesCount();
-    cudaMallocManaged((void**)&tree, maxNodes * sizeof(QuadTree)); // plus one for the root
+    cudaMallocManaged((void**)&this->tree, maxNodes * sizeof(QuadTree)); // plus one for the root
     GET_CUDA_ERROR("cudaMallocManaged() tree");
     cudaDeviceSynchronize();
     GET_CUDA_ERROR("cudaDeviceSynchronize");
 }
 
-void QuadTreeBuilder::build(Spherical* points, const int size)
+template<typename ParticleType>
+void QuadTreeBuilder<ParticleType>::build(ParticleType* points, const int size)
 {
     reset();
 
-    tree->id = 0;
-    tree->bounds.min = treeConfig.origin;
+    this->tree->id = 0;
+    this->tree->bounds.min = treeConfig.origin;
     const auto maxDim = treeConfig.origin + treeConfig.size;
-    tree->bounds.max = maxDim;
-    tree->startId = 0;
-    tree->endId = size;
+    this->tree->bounds.max = maxDim;
+    this->tree->startId = 0;
+    this->tree->endId = size;
 
     std::cout << "Build()" << std::endl;
 
     auto startTime = std::chrono::high_resolution_clock::now();
     const int warpsPerBlock = treeConfig.threadsPerBlock / 32;
 
-    cudaMemcpy(pointsExch, points, size * sizeof(Spherical), cudaMemcpyDeviceToDevice);
+    cudaMemcpy(pointsExch, points, size * sizeof(ParticleType), cudaMemcpyDeviceToDevice);
 
-    QuadTreeKernel<128><<<1, treeConfig.threadsPerBlock, warpsPerBlock * 4 * sizeof(int)>>>
+    QuadTreeKernel<128, ParticleType><<<1, treeConfig.threadsPerBlock, warpsPerBlock * 4 * sizeof(int)>>>
     (
-        tree,
+        this->tree,
         points,
         pointsExch,
         treeConfig
@@ -64,7 +66,7 @@ void QuadTreeBuilder::build(Spherical* points, const int size)
     std::cout << "Kernel() duration: " <<
         (std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count()) << std::endl;
 
-    QuadTree* tree2 = tree;
+    QuadTree* tree2 = this->tree;
     int totalCount = 0;
 
     for (int depth = 0; depth < treeConfig.maxDepth; ++depth)
@@ -92,23 +94,25 @@ void QuadTreeBuilder::build(Spherical* points, const int size)
     }
 }
 
-void QuadTreeBuilder::reset()
+template<typename ParticleType>
+void QuadTreeBuilder<ParticleType>::reset()
 {
     std::cout << "Reset()" << std::endl;
     const int maxNodes = treeConfig.GetNodesCount();
 
     for (int i = 0; i < maxNodes; ++i)
     {
-        tree[i].id = 0;
-        tree[i].bounds.min = {0.0f, 0.0f, 0.0f};
-        tree[i].bounds.max = {0.0f, 0.0f, 0.0f};
-        tree[i].startId = 0;
-        tree[i].endId = 0;
+        this->tree[i].id = 0;
+        this->tree[i].bounds.min = {0.0f, 0.0f, 0.0f};
+        this->tree[i].bounds.max = {0.0f, 0.0f, 0.0f};
+        this->tree[i].startId = 0;
+        this->tree[i].endId = 0;
     }
 }
 
-QuadTreeBuilder::~QuadTreeBuilder()
+template<typename ParticleType>
+QuadTreeBuilder<ParticleType>::~QuadTreeBuilder()
 {
     cudaFree(pointsExch);
-    cudaFree(tree);
+    cudaFree(this->tree);
 }

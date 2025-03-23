@@ -14,6 +14,7 @@ public:
 
   Shape() = default;
 
+  __host__ __device__
   virtual ~Shape()= default;
 
   __host__ __device__

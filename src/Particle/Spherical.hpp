@@ -6,7 +6,7 @@
 
 #include "Material/Material.hpp"
 #include "Shape/Sphere/Sphere.hpp"
-#include "Tools/Quaternion.hpp"
+#include "Tools/quaternion/quaternion.hpp"
 #include "Tools/AABB/AABB.hpp"
 #include <Tools/ArthmiticOperator/MathOperators.hpp>
 
@@ -19,12 +19,8 @@ public:
     __host__ __device__
     Spherical() = default;
 
-    Spherical(const Material& material, const Sphere& shape);
-
     __host__ __device__
     Spherical(const Spherical &);
-
-    Spherical(const Material& material, Sphere& shape);
 
     __host__ __device__
     Spherical(Spherical &particle)
@@ -36,6 +32,11 @@ public:
         boundingBox.max = particle.position + particle.getMax();
     }
 
+    Spherical(const Material& material, const Sphere& shape);
+
+    Spherical(const Material& material, Sphere& shape);
+
+    
     // Other methods remain the same ...
     ~Spherical() override = default;
 
