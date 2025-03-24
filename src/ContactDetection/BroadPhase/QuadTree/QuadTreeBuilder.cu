@@ -21,7 +21,7 @@ QuadTreeBuilder<ParticleType>::QuadTreeBuilder(const TreeConfig& treeConfig)
 template<typename ParticleType>
 void QuadTreeBuilder<ParticleType>::initialize(const int capacity)
 {
-    cudaMalloc((void**)&pointsExch, capacity * sizeof(Spherical));
+    cudaMalloc((void**)&pointsExch, capacity * sizeof(ParticleType));
     GET_CUDA_ERROR("cudaMalloc() pointsExch");
 
     // tree:
@@ -48,20 +48,25 @@ void QuadTreeBuilder<ParticleType>::build(ParticleType* points, const int size)
 
     auto startTime = std::chrono::high_resolution_clock::now();
     const int warpsPerBlock = treeConfig.threadsPerBlock / 32;
+    const int sharedMemSize = warpsPerBlock * 4 * sizeof(int);
 
     cudaMemcpy(pointsExch, points, size * sizeof(ParticleType), cudaMemcpyDeviceToDevice);
+    GET_CUDA_ERROR("cudaMemcpyError");
 
-    QuadTreeKernel<128, ParticleType><<<1, treeConfig.threadsPerBlock, warpsPerBlock * 4 * sizeof(int)>>>
+    QuadTreeKernel<ParticleType><<<1, treeConfig.threadsPerBlock, sharedMemSize>>>
     (
         this->tree,
         points,
         pointsExch,
-        treeConfig
-        );
-
+        0,
+        treeConfig.maxDepth,
+        treeConfig.minPointsPerNode
+    );
     GET_CUDA_ERROR("KernelError");
+
     cudaDeviceSynchronize();
     GET_CUDA_ERROR("SyncError");
+
     auto endTime = std::chrono::high_resolution_clock::now();
     std::cout << "Kernel() duration: " <<
         (std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count()) << std::endl;
@@ -113,6 +118,6 @@ void QuadTreeBuilder<ParticleType>::reset()
 template<typename ParticleType>
 QuadTreeBuilder<ParticleType>::~QuadTreeBuilder()
 {
-    cudaFree(pointsExch);
-    cudaFree(this->tree);
+    //cudaFree(pointsExch);
+    //cudaFree(this->tree);
 }

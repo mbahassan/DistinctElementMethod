@@ -9,7 +9,7 @@ Sphere::Sphere(float radius): radius_(radius) {
     setShapeType(SPHERE);
 }
 
-Sphere::Sphere(const Sphere& sphere) {
+Sphere::Sphere(const Sphere& sphere)  : Shape(sphere) {
     radius_ = sphere.radius_;
     setShapeType(SPHERE);
 };

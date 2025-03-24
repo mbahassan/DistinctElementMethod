@@ -20,11 +20,18 @@ public:
     Spherical() = default;
 
     __host__ __device__
-    Spherical(const Spherical &);
+    Spherical(const Spherical &particle)
+     : Material(particle), Sphere(particle) {
+        position = particle.position;
+        velocity = particle.velocity;
+
+        boundingBox.min = particle.position - particle.getMin();
+        boundingBox.max = particle.position + particle.getMax();
+    };
 
     __host__ __device__
     Spherical(Spherical &particle)
-    {
+     : Material(particle), Sphere(particle) {
         position = particle.position;
         velocity = particle.velocity;
 
@@ -67,7 +74,7 @@ public:
 
     float inertia= 0.f;
 
-    AxisAlignedBoundingBox<float3> boundingBox;
+    AxisAlignedBoundingBox<float3> boundingBox {};
 
 
 };

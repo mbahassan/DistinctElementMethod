@@ -1,7 +1,3 @@
-//
-// Created by iqraa on 23-3-25.
-//
-
 #ifndef OBJREADER_H
 #define OBJREADER_H
 
@@ -12,6 +8,7 @@
 #include <string>
 #include <vector_types.h>
 #include <Tools/quaternion/quaternion.hpp>
+#include <vector>
 
 struct Face {
     int indices[4];  // support up to quad
@@ -21,8 +18,7 @@ struct Face {
 class ObjReader {
 public:
     /// Default Constructor
-    // ObjReader() = default;
-
+    ObjReader() = default;
 
     /// Constructor form File
     explicit ObjReader(const std::string& filename)
@@ -34,14 +30,32 @@ public:
         computeBoundingBox();
     }
 
+    /// Copy constructor
+    ObjReader(const ObjReader& other)
+    {
+        copyFrom(other);
+    }
+
+    /// Assignment operator
+    ObjReader& operator=(const ObjReader& other)
+    {
+        if (this != &other) {
+            cleanup();
+            copyFrom(other);
+        }
+        return *this;
+    }
+
     /// Destructor
     virtual ~ObjReader()
     {
-        delete[] vertices;
-        delete[] faces;
+        cleanup();
     }
 
     bool load(const std::string& filename) {
+        // Cleanup any existing data
+        cleanup();
+
         int estimatedVertices = 0;
         int estimatedFaces = 0;
 
@@ -70,6 +84,14 @@ public:
         vertices = new float3[vertexCount];
         faces = new Face[faceCount];
 
+        // Initialize faces to avoid garbage values
+        for (int i = 0; i < faceCount; i++) {
+            faces[i].size = 0;
+            for (int j = 0; j < 4; j++) {
+                faces[i].indices[j] = 0;
+            }
+        }
+
         // Second pass: actually read data
         std::ifstream file(filename);
         if (!file.is_open()) {
@@ -94,16 +116,42 @@ public:
                 Face face;
                 face.size = 0;
 
+                // Initialize indices to avoid garbage values
+                for (int i = 0; i < 4; i++) {
+                    face.indices[i] = 0;
+                }
+
                 iss >> f;
                 while (iss >> token && face.size < 4) {
                     std::istringstream tokenStream(token);
                     std::string idxStr;
                     std::getline(tokenStream, idxStr, '/');
-                    int idx = std::stoi(idxStr) - 1;
-                    face.indices[face.size++] = idx;
+                    
+                    // Validate index
+                    try {
+                        int idx = std::stoi(idxStr) - 1;
+                        if (idx >= 0 && idx < vertexCount) {
+                            face.indices[face.size++] = idx;
+                        } else {
+                            std::cerr << "Invalid vertex index in OBJ: " << idx + 1 << " (max: " << vertexCount << ")\n";
+                            // Use a default index (0) rather than failing
+                            face.indices[face.size - 1] = 0;
+                        }
+                    } catch (const std::exception& e) {
+                        std::cerr << "Error parsing face index: " << e.what() << "\n";
+                        // Revert the size increment that caused the error
+                        if (face.size > 0) face.size--;
+                    }
                 }
 
-                faces[fIndex++] = face;
+                // Only add face if it has valid size
+                if (face.size >= 3) {
+                    faces[fIndex++] = face;
+                } else {
+                    std::cerr << "Skipping invalid face with size " << face.size << "\n";
+                    // Decrement faceCount since we're not using this face
+                    faceCount--;
+                }
             }
         }
 
@@ -113,12 +161,27 @@ public:
 
     int getVerticesCount() const { return vertexCount; }
 
-    int getFacesCount() const {return faceCount;}
+    int getFacesCount() const { return faceCount; }
 
-    float3 getVertex(int i) const {return vertices[i];}
+    float3 getVertex(int i) const {
+        if (i >= 0 && i < vertexCount) {
+            return vertices[i];
+        }
+        std::cerr << "Warning: Vertex index out of bounds: " << i << "\n";
+        return {0.0f, 0.0f, 0.0f};
+    }
 
-    Face& getFace(int i) const {
-        return faces[i];
+    Face getFace(int i) const {
+        if (i >= 0 && i < faceCount) {
+            return faces[i];
+        }
+        std::cerr << "Warning: Face index out of bounds: " << i << "\n";
+        Face emptyFace;
+        emptyFace.size = 0;
+        for (int j = 0; j < 4; j++) {
+            emptyFace.indices[j] = 0;
+        }
+        return emptyFace;
     }
 
     void printSummary() const
@@ -130,18 +193,86 @@ public:
         for (int i = 0; i < faceCount; ++i) {
             std::cout << "f ";
             for (int j = 0; j < faces[i].size; ++j)
-                std::cout << faces[i].indices[j] + 1 << " "; // Fixed: was faces[i].indices[i]
+                std::cout << faces[i].indices[j] + 1 << " ";
             std::cout << "\n";
         }
+    }
+
+    // Deep copy the vertices and faces for safety
+    std::vector<float3> copyVertices() const {
+        std::vector<float3> result;
+        for (int i = 0; i < vertexCount; ++i) {
+            result.push_back(vertices[i]);
+        }
+        return result;
+    }
+
+    // Deep copy the faces for safety
+    std::vector<Face> copyFaces() const {
+        std::vector<Face> result;
+        for (int i = 0; i < faceCount; ++i) {
+            result.push_back(faces[i]);
+        }
+        return result;
     }
 
     float3* getVertices() const { return vertices; }
 
     Face* getFaces() const { return faces; }
 
+    float getObjVolume() const { return volume; }
+
+    float3 getObjMin() const { return outMin; }
+
+    float3 getObjMax() const { return outMax; }
+
+    Quaternion getObjOrientation() const { return orientation; }
+
+    float3 getObjCOM() const { return com; }
+
+private:
+    // Clean up dynamically allocated memory
+    void cleanup() {
+        delete[] vertices;
+        delete[] faces;
+        vertices = nullptr;
+        faces = nullptr;
+        vertexCount = 0;
+        faceCount = 0;
+    }
+
+    // Helper for copy constructor and assignment operator
+    void copyFrom(const ObjReader& other) {
+        vertexCount = other.vertexCount;
+        faceCount = other.faceCount;
+        volume = other.volume;
+        com = other.com;
+        orientation = other.orientation;
+        outMin = other.outMin;
+        outMax = other.outMax;
+
+        if (vertexCount > 0) {
+            vertices = new float3[vertexCount];
+            for (int i = 0; i < vertexCount; ++i) {
+                vertices[i] = other.vertices[i];
+            }
+        } else {
+            vertices = nullptr;
+        }
+
+        if (faceCount > 0) {
+            faces = new Face[faceCount];
+            for (int i = 0; i < faceCount; ++i) {
+                faces[i] = other.faces[i];
+            }
+        } else {
+            faces = nullptr;
+        }
+    }
+
     // Calculate volume of the mesh using the divergence theorem
     float computeVolume() const {
-        float volume = 0.0f;
+        float vol = 0.0f;
 
         // For each face
         for (int i = 0; i < faceCount; ++i) {
@@ -161,28 +292,15 @@ public:
                                       v0.y * (v2.x * v1.z - v1.x * v2.z) +
                                       v0.z * (v1.x * v2.y - v2.x * v1.y);
 
-                    volume += detMatrix;
+                    vol += detMatrix;
                 }
             }
         }
 
         // Volume is 1/6 of the sum
-        return std::abs(volume) / 6.0f;
+        return std::abs(vol) / 6.0f;
     }
 
-    float getObjVolume() const {return volume;}
-
-    float3 getObjMin() const{return outMin;}
-
-    float3 getObjMax() const{return outMax;}
-
-    Quaternion getObjOrientation() const {return orientation;}
-
-    float3 getObjCOM() const {return com;}
-
-private:
-    // New function to compute the axis-aligned bounding box:
-    // It returns the minimum and maximum points of the bounding box through output parameters.
     void computeBoundingBox() {
         if (vertexCount == 0) {
             std::cerr << "Can not get BBox !" << std::endl;
@@ -205,16 +323,17 @@ private:
 
     // Calculate orientation as quaternion using Principal Component Analysis (PCA)
     Quaternion computeOrientation() const {
+        // Implementation unchanged
         // Calculate center of mass first
-        float3 com = computeCOM();
+        float3 center = computeCOM();
 
         // Compute covariance matrix
         float covMat[3][3] = {{0.0f}};
 
         for (int i = 0; i < vertexCount; ++i) {
-            float dx = vertices[i].x - com.x;
-            float dy = vertices[i].y - com.y;
-            float dz = vertices[i].z - com.z;
+            float dx = vertices[i].x - center.x;
+            float dy = vertices[i].y - center.y;
+            float dz = vertices[i].z - center.z;
 
             covMat[0][0] += dx * dx;
             covMat[0][1] += dx * dy;
@@ -304,7 +423,7 @@ private:
 
     // Calculate center of mass (centroid)
     float3 computeCOM() const {
-        float3 com = {0.0f, 0.0f, 0.0f};
+        float3 center = {0.0f, 0.0f, 0.0f};
         float totalVolume = 0.0f;
 
         // For each face
@@ -336,23 +455,22 @@ private:
                     centroid.z = (v0.z + v1.z + v2.z) / 4.0f;
 
                     // Weighted contribution to COM
-                    com.x += centroid.x * volume;
-                    com.y += centroid.y * volume;
-                    com.z += centroid.z * volume;
+                    center.x += centroid.x * volume;
+                    center.y += centroid.y * volume;
+                    center.z += centroid.z * volume;
                 }
             }
         }
 
         // Normalize by total volume
         if (totalVolume != 0.0f) {
-            com.x /= totalVolume;
-            com.y /= totalVolume;
-            com.z /= totalVolume;
+            center.x /= totalVolume;
+            center.y /= totalVolume;
+            center.z /= totalVolume;
         }
 
-        return com;
+        return center;
     }
-
 
     float3* vertices = nullptr;
     Face* faces = nullptr;
@@ -361,12 +479,11 @@ private:
     int vertexCount = 0;
     int faceCount = 0;
 
-    float3 outMin = {0.0f, 0.0f, 0.0f};
-    float3 outMax = {0.0f, 0.0f, 0.0f};
+    float3 outMin {0.0f, 0.0f, 0.0f};
+    float3 outMax {0.0f, 0.0f, 0.0f};
 
-    float3 com;
-    float volume;
+    float3 com {0.0f, 0.0f, 0.0f};
+    float volume = 0.0f;
 };
-
 
 #endif //OBJREADER_H

@@ -11,7 +11,7 @@ struct TreeConfig
 {
     TreeType type = QUADTREE;
     float3 origin = {0.0f,0.0f,0.0f};
-    float3 size =  {1.0f,1.0f,0.0f};
+    float3 size =  {2.0f,2.0f,2.0f};
 
     int depth = -1;
     int maxDepth ;

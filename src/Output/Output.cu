@@ -127,7 +127,7 @@ void Output::writeParticles(const std::vector<Polyhedral> &particles, const int 
         // Precompute the quaternion conjugate (inverse for unit quaternions)
         Quaternion qConj = q.conjugate();
 
-        for (size_t i = 0; i < particle.getVerticesCount(); i++)
+        for (int i = 0; i < particle.getVerticesCount(); i++)
         {
             float3 v = particle.getVertex(i);
 
@@ -163,7 +163,7 @@ void Output::writeParticles(const std::vector<Polyhedral> &particles, const int 
     vtpFile << "        <DataArray type=\"Int64\" Name=\"connectivity\" format=\"ascii\">\n";
     vertexOffset = 0;
     for (const auto& particle : particles) {
-        for (size_t i = 0; i < particle.getFacesCount(); i++) {
+        for (int i = 0; i < particle.getFacesCount(); i++) {
             auto face = particle.getFace(i);
             vtpFile << "          ";
             for (size_t j = 0; j < face.size; j++) {

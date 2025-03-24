@@ -12,7 +12,7 @@ class Sphere : public Shape
 {
 public:
     __host__ __device__
-    Sphere()
+    Sphere() : Shape()
     {
         setShapeType(SPHERE);
     }
@@ -21,7 +21,7 @@ public:
 
     Sphere(const Sphere& sphere);
 
-    ~Sphere() = default;
+    ~Sphere() override = default;
 
     void setRadius(float radius);
 
@@ -32,7 +32,13 @@ public:
     float3 getMin() override {return make_float3(radius_, radius_ ,radius_);}
 
     __host__ __device__
+    float3 getMin() const {return make_float3(radius_, radius_ ,radius_);}
+
+    __host__ __device__
     float3 getMax() override {return make_float3(radius_, radius_ ,radius_);}
+
+    __host__ __device__
+    float3 getMax() const {return make_float3(radius_, radius_ ,radius_);}
 
     __host__ __device__
     float getVolume() override {return 4.0f * radius_*radius_*radius_ / 3.0f;}

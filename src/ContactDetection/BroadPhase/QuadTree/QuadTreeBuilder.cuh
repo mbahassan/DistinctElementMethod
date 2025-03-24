@@ -16,7 +16,7 @@ template<typename ParticleType>
 class QuadTreeBuilder : public ITreeBuilder<QuadTree, ParticleType>
 {
     public:
-    QuadTreeBuilder(const TreeConfig& treeConfig);
+    explicit QuadTreeBuilder(const TreeConfig& treeConfig);
 
     ~QuadTreeBuilder() override;
 
@@ -32,7 +32,7 @@ class QuadTreeBuilder : public ITreeBuilder<QuadTree, ParticleType>
     TreeConfig treeConfig;
 };
 
-template class QuadTreeBuilder<Spherical>;
+// template class QuadTreeBuilder<Spherical>;
 template class QuadTreeBuilder<Polyhedral>;
 
 #endif //QUADTREEBUILDER_H
