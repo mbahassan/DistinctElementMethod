@@ -33,6 +33,6 @@ class QuadTreeBuilder : public ITreeBuilder<QuadTree, ParticleType>
 };
 
 template class QuadTreeBuilder<Spherical>;
-// template class QuadTreeBuilder<Polyhedral>;
+template class QuadTreeBuilder<Polyhedral>;
 
 #endif //QUADTREEBUILDER_H

@@ -85,7 +85,7 @@ void Output::writeParticles(const std::vector<Spherical> &particles, const int t
 
 void Output::writeParticles(const std::vector<Polyhedral> &particles, const int timestep) {
     // Create filename with zero-padded timestep
-    std::string filename = createFilename("polyparticles", timestep, ".vtp");
+    std::string filename = createFilename("particles", timestep, "Poly.vtp");
     std::ofstream vtpFile(filename);
 
     if (!vtpFile.is_open()) {
@@ -103,9 +103,10 @@ void Output::writeParticles(const std::vector<Polyhedral> &particles, const int 
         totalFaces += particle.getFacesCount();
 
         // Count total indices by adding up the number of vertices in each face
-        for (size_t i = 0; i < particle.getFacesCount(); i++) {
+        for (size_t i = 0; i < particle.getFacesCount(); i++)
+        {
             auto face = particle.getFace(i);
-            totalIndices += face.indices.size();
+            totalIndices += face.size;
         }
     }
 
@@ -165,7 +166,7 @@ void Output::writeParticles(const std::vector<Polyhedral> &particles, const int 
         for (size_t i = 0; i < particle.getFacesCount(); i++) {
             auto face = particle.getFace(i);
             vtpFile << "          ";
-            for (size_t j = 0; j < face.indices.size(); j++) {
+            for (size_t j = 0; j < face.size; j++) {
                 vtpFile << (face.indices[j] + vertexOffset) << " ";
             }
             vtpFile << "\n";
@@ -180,7 +181,7 @@ void Output::writeParticles(const std::vector<Polyhedral> &particles, const int 
     for (const auto& particle : particles) {
         for (size_t i = 0; i < particle.getFacesCount(); i++) {
             auto face = particle.getFace(i);
-            offset += face.indices.size();
+            offset += face.size;
             vtpFile << "          " << offset << "\n";
         }
     }

@@ -7,7 +7,7 @@
 #include <ContactDetection/ContactDetection.cuh>
 #include <Output/Output.cuh>
 #include <Particle/Spherical.hpp>
-// #include <Particle/Polyhedral.hpp>
+#include <Particle/Polyhedral.hpp>
 
 #include <Tools/Config/Parser.h>
 #include "Insertion/InsertionCpu.h"
@@ -21,17 +21,18 @@ int main(int argc, char **argv)
 
     Sphere sphere(0.1);
 
-    // Polytope pSphere("sphere0.03R.obj");
+    Polytope cube("cube.obj");
 
     Material glass(config.materialConfigPath);
 
-    // std::vector<Polyhedral> particles(11);
-    // for(int i = 0; i < 11; i++)
-    // {
-    //     particles[i] = Polyhedral(glass, pSphere);
-    //     particles[i].setId(i);
-    // }
-    // particles[0].position = {0.10f, 0.90f, 0.0f};
+    std::vector<Polyhedral> poly(1);
+    for(int i = 0; i < 1; i++)
+    {
+        poly[i] = Polyhedral(glass, cube);
+        poly[i].setId(i);
+    }
+
+    poly[0].position = {0.10f, 0.90f, 0.0f};
 
     std::vector<Spherical> particles(11);
     for(int i = 0; i < 11; i++)
@@ -71,7 +72,7 @@ int main(int argc, char **argv)
 
     Output output("results");
     output.writeParticles(particles, 0);
-    output.writeParticles(particles, 0);
+    output.writeParticles(poly, 0);
     // output.writeTree(cd.getTree(),0);
 
     // std::cout << "particle radius: "<< particles[0].getRadius() << std::endl;

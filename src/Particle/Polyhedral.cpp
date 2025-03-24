@@ -4,15 +4,15 @@
 #include <Tools/ArthmiticOperator/MathOperators.hpp>
 
 
-Polyhedral::Polyhedral(const Material& material, const Polytope& shape):
-Material(material), Polytope(shape) {
+Polyhedral::Polyhedral(const Material& material, const Polytope& polytope):
+Polytope(polytope), Material(material) {
     boundingBox.min = position - Polytope::getMin();
     boundingBox.max = position + Polytope::getMax();
 }
 
 
-Polyhedral::Polyhedral(Material& material, Polytope& shape):
-Material(material), Polytope(shape)
+Polyhedral::Polyhedral(Material& material, Polytope& polytope):
+Polytope(polytope), Material(material)
 {
     boundingBox.min = position + Polytope::getMin();
     boundingBox.max = position + Polytope::getMax();
@@ -26,10 +26,10 @@ float3 Polyhedral::getAxisDirection() const
 
     // Convert quaternion to rotation matrix
     // Using quaternion components (w,x,y,z)
-    float w = orientation.w;
-    float x = orientation.x;
-    float y = orientation.y;
-    float z = orientation.z;
+    float w = getOrientation().w;
+    float x = getOrientation().x;
+    float y = getOrientation().y;
+    float z = getOrientation().z;
 
     // Apply quaternion rotation to default axis
     // This is an optimized version of the quaternion rotation formula
