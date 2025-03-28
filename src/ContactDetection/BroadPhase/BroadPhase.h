@@ -46,18 +46,18 @@ public:
         if (treeType_ == QUADTREE)
         {
             size_t particlesCount = particles.size();
-            ParticleType* pointsHost = particles.data();
+            ParticleType* particlesHost = particles.data();
             std::cout << "BroadPhase::initialize(): " << particlesCount << " particles\n";
 
-            ParticleType* points;
-            hostToDevice(pointsHost, particlesCount, &points);
+            ParticleType* particlesDevice;
+            hostToDevice(particlesHost, particlesCount, &particlesDevice);
 
             treeBuilder = std::make_unique<QuadTreeBuilder<ParticleType>>(treeConfig_);
             treeBuilder->initialize(particlesCount);
-            treeBuilder->build(points, particlesCount);
+            treeBuilder->build(particlesDevice, particlesCount);
 
             QuadTreeWriter::writeQuadTree("./results/quadtree_000000.vtu", &treeBuilder->getTree(), treeConfig_);
-            deviceToHost(points, particlesCount, &pointsHost);
+            deviceToHost(particlesDevice, particlesCount, &particlesHost);
         }
     }
 
@@ -72,7 +72,9 @@ public:
 
         // First pass: collect all leaf nodes
         const QuadTree* currentTree = &treeBuilder->getTree();
-        for (int depth = 0; depth < treeConfig_.maxDepth; ++depth) {
+
+        for (int depth = 0; depth < treeConfig_.maxDepth; ++depth)
+        {
             const auto numNodesAtDepth = getNumNodesInCurrentDepth<2>(depth);
 
             for (int nodeIdx = 0; nodeIdx < numNodesAtDepth; ++nodeIdx) {
@@ -81,7 +83,7 @@ public:
                 // Check if this is a leaf node with particles
                 if ((subTree->particlesCountInNode() < treeConfig_.minPointsPerNode ||
                     depth == treeConfig_.maxDepth - 1) && subTree->particlesCountInNode() > 0) {
-                    leafNodes.push_back(std::make_pair(subTree, nodeIdx));
+                    leafNodes.emplace_back(subTree, nodeIdx);
                 }
             }
 
@@ -132,8 +134,8 @@ private:
                     p1.boundingBox.Check(p2.boundingBox.max)) {
                     // Create a contact pair and add to our vector
                     PotentialContact contact;
-                    contact.particleIdI = p1.getId();
-                    contact.particleIdJ = p2.getId();
+                    contact.particleIdI = p1.id;
+                    contact.particleIdJ = p2.id;
                     contacts.push_back(contact);
                 }
             }
@@ -161,8 +163,8 @@ private:
 
                 // Create a unique pair ID to avoid duplicate checks
                 // (using min/max to ensure order doesn't matter)
-                int minId = std::min(p1.getId(), p2.getId());
-                int maxId = std::max(p1.getId(), p2.getId());
+                int minId = std::min(p1.id, p2.id);
+                int maxId = std::max(p1.id, p2.id);
                 uint64_t pairId = (static_cast<uint64_t>(minId) << 32) | maxId;
 
                 // Skip if we've already processed this pair
@@ -175,8 +177,8 @@ private:
                     p1.boundingBox.Check(p2.boundingBox.max)) {
                     // Create a contact pair and add to our vector
                     PotentialContact contact;
-                    contact.particleIdI = p1.getId();
-                    contact.particleIdJ = p2.getId();
+                    contact.particleIdI = p1.id;
+                    contact.particleIdJ = p2.id;
                     contacts.push_back(contact);
                 }
             }

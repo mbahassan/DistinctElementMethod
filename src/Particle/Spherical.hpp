@@ -20,39 +20,46 @@ public:
     Spherical() = default;
 
     __host__ __device__
-    Spherical(const Spherical &particle)
-     : Material(particle), Sphere(particle) {
-        position = particle.position;
-        velocity = particle.velocity;
+    Spherical(const Spherical& spherical)
+    {
+        position = spherical.position;
+        velocity = spherical.velocity;
+        boundingBox.min = spherical.boundingBox.min;
+        boundingBox.max = spherical.boundingBox.max;
 
-        boundingBox.min = particle.position - particle.getMin();
-        boundingBox.max = particle.position + particle.getMax();
+        calculateMass();
     };
 
     __host__ __device__
-    Spherical(Spherical &particle)
-     : Material(particle), Sphere(particle) {
-        position = particle.position;
-        velocity = particle.velocity;
+    Spherical(Spherical &spherical)
+    {
+        position = spherical.position;
+        velocity = spherical.velocity;
+        boundingBox.min = spherical.boundingBox.min;
+        boundingBox.max = spherical.boundingBox.max;
 
-        boundingBox.min = particle.position - particle.getMin();
-        boundingBox.max = particle.position + particle.getMax();
+        calculateMass();
     }
 
-    Spherical(const Material& material, const Sphere& shape);
+    __host__ __device__
+    Spherical(const Material& material, const Sphere& sphere):
+    Material(material), Sphere(sphere)
+    {
+        calculateMass();
+    }
 
-    Spherical(const Material& material, Sphere& shape);
 
-    
-    // Other methods remain the same ...
+    __host__ __device__
+    Spherical(Material& material, Sphere& sphere):
+    Material(material), Sphere(sphere)
+    {
+        boundingBox.min = position - Sphere::getMin();
+        boundingBox.max = position + Sphere::getMax();
+        calculateMass();
+    }
+
+    __host__ __device__
     ~Spherical() override = default;
-
-    // Orientation-specific methods
-    void setOrientation(const Quaternion& q) { orientation = q; }
-
-    Quaternion getOrientation() const {return orientation;}
-
-    float3 getAxisDirection() const; // Returns the current axis direction of the particle
 
     float3 position {0.f,0.f,0.f};      // Position in 3D space
 
@@ -68,15 +75,20 @@ public:
 
     float3 force {0.f,0.f,0.f};
 
-    float mass = getVolume() * getDensity();
+    float mass = 0.0f;
 
     float3 torque = {0.f,0.f,0.f};
 
     float inertia= 0.f;
 
-    AxisAlignedBoundingBox<float3> boundingBox {};
+    BoundingBox<float3> boundingBox {};
 
+private:
 
+    __host__ __device__
+    void calculateMass() {
+        mass = getVolume() * getDensity();
+    }
 };
 
 #endif //SPHERICAL_PARTICLE_H

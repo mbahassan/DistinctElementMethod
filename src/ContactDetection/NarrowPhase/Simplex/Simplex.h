@@ -5,7 +5,10 @@
 #ifndef SIMPLEX_CUH
 #define SIMPLEX_CUH
 
+// #include <Tools/Vector.h>
 #include <vector>
+#include <vector_types.h>
+
 
 class Simplex {
 public:

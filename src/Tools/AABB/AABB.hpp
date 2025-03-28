@@ -6,7 +6,7 @@
 #define AABB_H
 #include <Tools/ArthmiticOperator/MathOperators.hpp>
 template <typename T>
-struct AxisAlignedBoundingBox
+struct BoundingBox
 {
     T min;
     T max;

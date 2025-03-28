@@ -5,14 +5,15 @@ set(SOURCES
 #        BroadPhase/Octree/OctreeBuilder.cu
 #        BroadPhase/Octree/OctreeBuilderKernel.cuh
 
+        BroadPhase/BroadPhase.cpp
         BroadPhase/QuadTree/QuadTreeBuilder.cu
         BroadPhase/QuadTree/QuadTreeBuilderKernel.cuh
 
         # Narrow phase detection
         NarrowPhase/NarrowPhase.cu
-        NarrowPhase/EPA/EPA.cu
-        NarrowPhase/GJK/GJK.cu
-        NarrowPhase/Simplex/Simplex.cu
+        NarrowPhase/EPA/EPA.cpp
+        NarrowPhase/GJK/GJK.cpp
+        NarrowPhase/Simplex/Simplex.cpp
 )
 
 # Enable CUDA dynamic parallelism

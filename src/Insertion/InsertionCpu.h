@@ -170,8 +170,9 @@ public:
 
         return particles;
     }
+
     template<typename ParticleType>
-std::vector<ParticleType> fillRandomly2D(std::vector<ParticleType>& particles,
+    std::vector<ParticleType> fillRandomly2D(std::vector<ParticleType>& particles,
                                          float3 boxMin,
                                          float3 boxMax,
                                          float minSpacing) {
@@ -208,9 +209,8 @@ std::vector<ParticleType> fillRandomly2D(std::vector<ParticleType>& particles,
                 particles[i].position = testPos;
                 valid++;
                 // For non-spherical particles, initialize random orientation
-                if (particles[i].getShapeType() != Shape::SPHERE) {
-                    Quaternion randomOrientation = getRandomOrientation();
-                    particles[i].setOrientation(randomOrientation);
+                if (particles[i].shapeType != Shape::SPHERE) {
+                    particles[i].orientation = getRandomOrientation();
                 }
             }
 
@@ -231,7 +231,7 @@ std::vector<ParticleType> fillRandomly2D(std::vector<ParticleType>& particles,
 
 
 private:
-    Quaternion getRandomOrientation()
+    static Quaternion getRandomOrientation()
     {
         std::random_device rd;
         std::mt19937 gen(rd());

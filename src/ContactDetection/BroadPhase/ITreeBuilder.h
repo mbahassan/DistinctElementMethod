@@ -12,9 +12,9 @@ class ITreeBuilder
 public:
     virtual ~ITreeBuilder() = default;
 
-    virtual void initialize(const int capacity) = 0;
+    virtual void initialize(int capacity) = 0;
 
-    virtual void build(P* points, const int count) = 0;
+    virtual void build(P* points, int count) = 0;
 
     virtual void reset() = 0;
 
@@ -24,7 +24,7 @@ public:
     }
 
 protected:
-    T* tree;
+    T* tree = nullptr;
 };
 
 #endif //ITREEBUILDER_H

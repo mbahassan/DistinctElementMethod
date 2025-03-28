@@ -99,14 +99,14 @@ void Output::writeParticles(const std::vector<Polyhedral> &particles, const int 
     size_t totalIndices = 0;
 
     for (const auto& particle : particles) {
-        totalVertices += particle.getVerticesCount();
-        totalFaces += particle.getFacesCount();
+        totalVertices += particle.numVertices;
+        totalFaces += particle.numTriangles ;
 
         // Count total indices by adding up the number of vertices in each face
-        for (size_t i = 0; i < particle.getFacesCount(); i++)
+        for (size_t i = 0; i < particle.numTriangles; i++)
         {
-            auto face = particle.getFace(i);
-            totalIndices += face.size;
+            // auto face = particle.getFaces()[i];
+            totalIndices += 3;
         }
     }
 
@@ -123,13 +123,14 @@ void Output::writeParticles(const std::vector<Polyhedral> &particles, const int 
     // Write all transformed vertices
     size_t vertexOffset = 0;
     for (const auto& particle : particles) {
-        const Quaternion& q = particle.getOrientation();
+        const Quaternion& q = particle.orientation;
         // Precompute the quaternion conjugate (inverse for unit quaternions)
         Quaternion qConj = q.conjugate();
 
-        for (int i = 0; i < particle.getVerticesCount(); i++)
+        for (int i = 0; i < particle.numVertices; i++)
         {
-            float3 v = particle.getVertex(i);
+
+            float3 v = particle.vertices[i];
 
             // Create a quaternion from the vertex (with w=0)
             // Quaternion vQuat(0.0f, v.x, v.y, v.z);
@@ -163,15 +164,14 @@ void Output::writeParticles(const std::vector<Polyhedral> &particles, const int 
     vtpFile << "        <DataArray type=\"Int64\" Name=\"connectivity\" format=\"ascii\">\n";
     vertexOffset = 0;
     for (const auto& particle : particles) {
-        for (int i = 0; i < particle.getFacesCount(); i++) {
-            auto face = particle.getFace(i);
-            vtpFile << "          ";
-            for (size_t j = 0; j < face.size; j++) {
-                vtpFile << (face.indices[j] + vertexOffset) << " ";
-            }
-            vtpFile << "\n";
+        for (int i = 0; i < particle.numTriangles; i++) {
+            int3 triangle = particle.triangles[i];
+            vtpFile << "          "
+                    << (triangle.x + vertexOffset) << " "
+                    << (triangle.y + vertexOffset) << " "
+                    << (triangle.z + vertexOffset) << "\n";
         }
-        vertexOffset += particle.getVerticesCount();
+        vertexOffset += particle.numVertices ;
     }
     vtpFile << "        </DataArray>\n";
 
@@ -179,9 +179,8 @@ void Output::writeParticles(const std::vector<Polyhedral> &particles, const int 
     vtpFile << "        <DataArray type=\"Int64\" Name=\"offsets\" format=\"ascii\">\n";
     size_t offset = 0;
     for (const auto& particle : particles) {
-        for (size_t i = 0; i < particle.getFacesCount(); i++) {
-            auto face = particle.getFace(i);
-            offset += face.size;
+        for (size_t i = 0; i < particle.numTriangles; i++) {
+            offset += 3;
             vtpFile << "          " << offset << "\n";
         }
     }
@@ -195,8 +194,8 @@ void Output::writeParticles(const std::vector<Polyhedral> &particles, const int 
     vtpFile << "        <DataArray type=\"Int32\" Name=\"ParticleID\" format=\"ascii\" NumberOfComponents=\"1\">\n";
     for (size_t particleIdx = 0; particleIdx < particles.size(); particleIdx++) {
         const auto& particle = particles[particleIdx];
-        for (size_t i = 0; i < particle.getVerticesCount(); i++) {
-            vtpFile << "          " << particle.getId() << "\n";
+        for (size_t i = 0; i < particle.numVertices; i++) {
+            vtpFile << "          " << particle.id << "\n";
         }
     }
     vtpFile << "        </DataArray>\n";
@@ -209,8 +208,8 @@ void Output::writeParticles(const std::vector<Polyhedral> &particles, const int 
     vtpFile << "        <DataArray type=\"Int32\" Name=\"ParticleID\" format=\"ascii\" NumberOfComponents=\"1\">\n";
     for (size_t particleIdx = 0; particleIdx < particles.size(); particleIdx++) {
         const auto& particle = particles[particleIdx];
-        for (size_t i = 0; i < particle.getFacesCount(); i++) {
-            vtpFile << "          " << particle.getId() << "\n";
+        for (size_t i = 0; i < particle.numTriangles; i++) {
+            vtpFile << "          " << particle.id << "\n";
         }
     }
     vtpFile << "        </DataArray>\n";
@@ -218,11 +217,8 @@ void Output::writeParticles(const std::vector<Polyhedral> &particles, const int 
     // Velocity attribute
     vtpFile << "        <DataArray type=\"Float32\" Name=\"Velocity\" format=\"ascii\" NumberOfComponents=\"3\">\n";
     for (const auto& particle : particles) {
-        for (size_t i = 0; i < particle.getFacesCount(); i++) {
-            vtpFile << "          "
-                    << particle.velocity.x << " "
-                    << particle.velocity.y << " "
-                    << particle.velocity.z << "\n";
+        for (size_t i = 0; i < particle.numTriangles; i++) {
+            vtpFile << "          0 0 0\n";
         }
     }
     vtpFile << "        </DataArray>\n";
@@ -230,13 +226,11 @@ void Output::writeParticles(const std::vector<Polyhedral> &particles, const int 
     // Angular velocity attribute
     vtpFile << "        <DataArray type=\"Float32\" Name=\"AngularVelocity\" format=\"ascii\" NumberOfComponents=\"3\">\n";
     for (const auto& particle : particles) {
-        for (size_t i = 0; i < particle.getFacesCount(); i++) {
-            vtpFile << "          "
-                    << particle.angularVel.x << " "
-                    << particle.angularVel.y << " "
-                    << particle.angularVel.z << "\n";
+        for (size_t i = 0; i < particle.numTriangles; i++) {
+            vtpFile << "          0 0 0\n";
         }
     }
+
     vtpFile << "        </DataArray>\n";
 
     vtpFile << "      </CellData>\n";

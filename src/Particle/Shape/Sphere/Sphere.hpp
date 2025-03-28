@@ -11,19 +11,31 @@
 class Sphere : public Shape
 {
 public:
+
     __host__ __device__
-    Sphere() : Shape()
+    Sphere()
     {
         setShapeType(SPHERE);
     }
 
-    explicit Sphere(float radius);
+    __host__ __device__
+    Sphere(const Sphere& sphere)
+    {
+        radius_ = sphere.radius_;
+        setShapeType(SPHERE);
+    };
 
-    Sphere(const Sphere& sphere);
+    /// Constructor by variable/file input
+    explicit Sphere(float radius): radius_(radius)
+    {
+        setShapeType(SPHERE);
+    }
 
+    __host__ __device__
     ~Sphere() override = default;
 
-    void setRadius(float radius);
+    __host__ __device__
+    void setRadius(float radius) {radius_ = radius;}
 
     __host__ __device__
     float getRadius() const {return radius_;}
@@ -43,6 +55,7 @@ public:
     __host__ __device__
     float getVolume() override {return 4.0f * radius_*radius_*radius_ / 3.0f;}
 
+    __host__ __device__
     float3 supportMapping(const float3& direction) const
     {
         return normalize(direction) * radius_;

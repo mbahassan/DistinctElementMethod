@@ -1,14 +1,14 @@
 set(LIB_NAME Tools)
 
 set(SOURCES
-        Position/Position.cpp
+#        Position/Position.cpp
         CudaHelper.cpp
-        CudaHelper.hpp
         quaternion/quaternion.hpp
-        AABB/AABB.hpp
-        tinyobjloader/objloader.cpp
-        objreader/ObjReader.cpp
-        objreader/ObjReader.h
+
+#        tinyobjloader/objloader.cpp
+#        ObjReader/ObjReader.cpp
+        StlReader/StlReader.cpp
+
 )
 
 add_library( ${LIB_NAME} SHARED  ${SOURCES})

@@ -6,11 +6,9 @@
 #define CONTACT_DETECTION_CUH
 
 #include <vector>
-#include "BroadPhase/BroadPhase.cuh"
+#include "BroadPhase/BroadPhase.h"
 #include "NarrowPhase/NarrowPhase.cuh"
 #include "ContactDetection/BroadPhase/Config/TreeType.h"
-#include <Particle/Spherical.hpp>
-#include <Particle/Polyhedral.hpp>
 #include "ContactConfig.h"
 
 template<class ParticleType>

@@ -6,11 +6,11 @@
 #define NARROWPHASE_CUH
 
 #include <vector>
-#include <ContactDetection/BroadPhase/BroadPhase.cuh>
+#include <ContactDetection/BroadPhase/BroadPhase.h>
 
 #include "Particle/Spherical.hpp"
-#include "ContactDetection/NarrowPhase/GJK/GJK.cuh"
-#include "ContactDetection/NarrowPhase/EPA/EPA.cuh"
+#include "ContactDetection/NarrowPhase/GJK/GJK.h"
+#include "ContactDetection/NarrowPhase/EPA/EPA.h"
 
 // Forward declaration to avoid circular dependency
 struct PotentialContact;

@@ -14,7 +14,7 @@ struct ITree
     int startId = 0;
     int endId = 0;
     bool isLeaf;
-    AxisAlignedBoundingBox<T> bounds;
+    BoundingBox<T> bounds;
 
     __host__ __device__ bool Check(const T& point) const
     {

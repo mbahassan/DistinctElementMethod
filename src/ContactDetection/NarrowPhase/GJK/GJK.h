@@ -7,7 +7,7 @@
 
 #include <random>
 #include "Particle/Spherical.hpp"
-#include "ContactDetection/NarrowPhase/Simplex/Simplex.cuh"
+#include "ContactDetection/NarrowPhase/Simplex/Simplex.h"
 
 class GJK {
 public:

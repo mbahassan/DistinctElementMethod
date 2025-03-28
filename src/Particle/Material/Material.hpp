@@ -8,11 +8,41 @@
 #include <string>
 #include <Tools/Config/Parser.h>
 #include <cuda_runtime_api.h>
+
 class Material {
 public:
+
     // Constructors
+    __host__ __device__
     Material() = default;
 
+    // Copy constructor const
+    __host__ __device__
+    Material(const Material& other)
+        :materialId_(other.materialId_),
+          density_(other.density_),
+          youngsModulus_(other.youngsModulus_),
+          poissonRatio_(other.poissonRatio_),
+          frictionCoeff_(other.frictionCoeff_),
+          restitutionCoeff_(other.restitutionCoeff_),
+          shearModulus_(other.shearModulus_),
+          effectiveYoungsModulus_(other.effectiveYoungsModulus_)
+    {}
+
+    // Copy constructor
+    __host__ __device__
+    Material(Material& other)
+        :materialId_(other.materialId_),
+          density_(other.density_),
+          youngsModulus_(other.youngsModulus_),
+          poissonRatio_(other.poissonRatio_),
+          frictionCoeff_(other.frictionCoeff_),
+          restitutionCoeff_(other.restitutionCoeff_),
+          shearModulus_(other.shearModulus_),
+          effectiveYoungsModulus_(other.effectiveYoungsModulus_)
+    {}
+
+    /// Constructor by variable/file input
     explicit Material(const std::string& path)
     {
         const nlohmann::json data = Parser::readJson(path);
@@ -29,7 +59,7 @@ public:
         calculateEffectiveYoungsModulus();
     }
 
-
+    /// Constructor by variable/file input
     Material(int materialId,
             float density,
             float youngsModulus,
@@ -48,21 +78,11 @@ public:
         calculateEffectiveYoungsModulus();
     }
 
-    // Copy constructor
-    Material(const Material& other)
-        :materialId_(other.materialId_),
-          density_(other.density_),
-          youngsModulus_(other.youngsModulus_),
-          poissonRatio_(other.poissonRatio_),
-          frictionCoeff_(other.frictionCoeff_),
-          restitutionCoeff_(other.restitutionCoeff_),
-          shearModulus_(other.shearModulus_),
-          effectiveYoungsModulus_(other.effectiveYoungsModulus_)
-    {}
-
+    __host__ __device__
     virtual ~Material() = default;
 
     // Getters
+    __host__ __device__
     int getMaterialId() const { return materialId_; }
 
     __host__ __device__
@@ -138,10 +158,12 @@ private:
     float effectiveYoungsModulus_ = 0.0f;// Pa
 
     // Helper methods to calculate derived properties
+    __host__ __device__
     void calculateShearModulus() {
         shearModulus_ = youngsModulus_ / (2.0f * (1.0f + poissonRatio_));
     }
 
+    __host__ __device__
     void calculateEffectiveYoungsModulus() {
         effectiveYoungsModulus_ = youngsModulus_ / (1.0f - poissonRatio_ * poissonRatio_);
     }

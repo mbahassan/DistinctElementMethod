@@ -12,6 +12,7 @@ class Shape
 public:
   enum ShapeType {SPHERE, CYLINDER, CUBE, POLYHEDRAL};
 
+  __host__  __device__
   Shape() = default;
 
   __host__ __device__

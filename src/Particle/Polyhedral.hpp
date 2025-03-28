@@ -8,57 +8,79 @@
 #include "Tools/quaternion/quaternion.hpp"
 #include "Tools/AABB/AABB.hpp"
 
-class Polyhedral : public Material, public Polytope {
+class Polyhedral : public Material {
 public:
     __host__ __device__
     Polyhedral() = default;
 
     /// Move Constructors
     Polyhedral(const Material& material, const Polytope& polytope)
-        : Material(material), Polytope(polytope) // Explicitly call copy constructors
+        : Material(material)
     {
-        initializeProperties();
+        numVertices = polytope.vertices.size();
+        numNormals = polytope.normals.size() ;
+        numTriangles  = polytope.triangles.size() ;
+        numSolids  = polytope.solids.size();
+
+        vertices  = new float3[numVertices]();
+        triangles = new int3[numTriangles]();
+        normals = new float3[numNormals]();
+        solids  = new unsigned int[numSolids]();
+
+        std::ranges::copy(polytope.vertices, vertices);
+        std::ranges::copy(polytope.triangles, triangles);
+        std::ranges::copy(polytope.normals, normals);
+        std::ranges::copy(polytope.solids, solids);
     }
 
     Polyhedral(Material& material, Polytope& polytope)
-        : Material(material), Polytope(polytope) // Explicitly call copy constructors
+        : Material(material)
     {
-        initializeProperties();
+        numVertices = polytope.vertices.size();
+        numNormals = polytope.normals.size();
+        numTriangles  = polytope.triangles.size();
+        numSolids  = polytope.solids.size();
+
+        vertices  = new float3[numVertices];
+        triangles = new int3[numTriangles];
+        normals = new float3[numNormals];
+        solids  = new unsigned int[numSolids];
+
+        std::ranges::copy(polytope.vertices, vertices);
+        std::ranges::copy(polytope.triangles, triangles);
+        std::ranges::copy(polytope.normals, normals);
+        std::ranges::copy(polytope.solids, solids);
     }
+
 
     /// Destructors
-    ~Polyhedral() override = default;
-
-    // Get face with bounds checking
-    Face getFace(int i) const {
-        return Polytope::getFace(i);
+    ~Polyhedral() override
+    {
+        vertices = nullptr;
+        triangles = nullptr;
+        normals = nullptr;
+        solids = nullptr;
     }
 
-    void setOrientation(const Quaternion& q) { orientation = q; }
+    int id = -1 ;
 
-    float3 getAxisDirection() const; // Returns the current axis direction of the particle
+    Shape::ShapeType shapeType = Shape::POLYHEDRAL;
 
     float3 position{0.f, 0.f, 0.f};      // Position in 3D space
-    float3 velocity{0.f, 0.f, 0.f};      // Linear velocity
-    float3 acceleration{0.f, 0.f, 0.f};  // Linear acceleration
-    float3 angularVel{0.f, 0.f, 0.f};   // Angular velocity
-    float3 angularAcc{0.f, 0.f, 0.f};   // Angular acceleration
-    float3 force{0.f, 0.f, 0.f};
-    float mass = 0.f;
-    float3 torque{0.f, 0.f, 0.f};
-    float inertia = 0.f;
-    AxisAlignedBoundingBox<float3> boundingBox;
-    Quaternion orientation;
-private:
-    void initializeProperties() {
-        // Initialize mass based on current state
-        mass = getVolume() * getDensity();
 
-        // Initialize bounding box
-        float3 min = getMin();
-        float3 max = getMax();
-        boundingBox = AxisAlignedBoundingBox<float3>(min, max);
-    }
+    BoundingBox<float3> boundingBox {};
+
+    Quaternion orientation;
+
+    float3* vertices = nullptr;
+    float3* normals = nullptr;
+    int3* triangles = nullptr;
+    unsigned int* solids = nullptr;
+
+    unsigned int numVertices = 0;
+    unsigned int numNormals =0 ;
+    unsigned int numSolids = 0;
+    unsigned int numTriangles = 0;
 };
 
 #endif //POLYHEDRAL_PARTICLE_H
