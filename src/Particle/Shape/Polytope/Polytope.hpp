@@ -18,7 +18,9 @@ public:
     std::vector<float3> normals;
     std::vector<unsigned int> solids;
 
-
+    float volume_ = 0.0f;
+    float3 min_ {0.0f, 0.0f, 0.0f};
+    float3 max_ {0.0f, 0.0f, 0.0f};
 
     __host__ __device__
     Polytope()
@@ -33,7 +35,11 @@ public:
         triangles = polytope.triangles;
         normals = polytope.normals;
         solids = polytope.solids;
+
         setShapeType(POLYHEDRAL);
+
+        calculateVolume();
+        calculateMinMax();
     }
 
     /// Constructor from File
@@ -68,7 +74,8 @@ public:
                     raw_normals[i+2]
                 ));
             }
-
+            calculateVolume();
+            calculateMinMax();
         }
         catch (std::exception& e) {
             std::cout << e.what() << std::endl;
@@ -80,21 +87,6 @@ public:
 
     ~Polytope() override = default;
 
-    float3 supportMapping(const float3 &direction) const
-    {
-        float maxDistance = vertices[0] & direction;
-        int maxIdx = 0;
-        for (int i = 1; i < vertices.size(); i++)
-        {
-            float distance = vertices[i] & direction;
-            if (distance > maxDistance) {
-                maxDistance = distance;
-                maxIdx = i;
-            }
-        }
-
-        return vertices[maxIdx];
-    }
 
     __host__ __device__
     float getVolume() override { return volume_; }
@@ -105,23 +97,42 @@ public:
     __host__ __device__
     float3 getMax() override { return max_; }
 
-    // Method to get the orientation
-    __host__ __device__
-    Quaternion getOrientation() const {
-        return orientation_;
-    }
 
 
 private:
-
-    float volume_ = 0.0f;
-    Quaternion orientation_;
-    float3 min_ {0.0f, 0.0f, 0.0f};
-    float3 max_ {0.0f, 0.0f, 0.0f};
-
     std::vector<float> raw_vertices;
     std::vector<int> raw_triangles;
     std::vector<float> raw_normals;
+
+    void calculateVolume() {
+        volume_ = 0.0f;
+        for (const auto& tri : triangles) {
+            const float3& v0 = vertices[tri.x];
+            const float3& v1 = vertices[tri.y];
+            const float3& v2 = vertices[tri.z];
+
+            volume_ += (v0.x * (v1.y * v2.z - v1.z * v2.y) +
+                       v0.y * (v1.z * v2.x - v1.x * v2.z) +
+                       v0.z * (v1.x * v2.y - v1.y * v2.x)) / 6.0f;
+        }
+        volume_ = std::fabs(volume_);
+    }
+
+    void calculateMinMax() {
+        min_ = float3(std::numeric_limits<float>::max());
+        max_ = float3(std::numeric_limits<float>::lowest());
+
+        for (const auto& v : vertices)
+        {
+            min_.x = std::min(min_.x, v.x);
+            min_.y = std::min(min_.y, v.y);
+            min_.z = std::min(min_.z, v.z);
+
+            max_.x = std::max(max_.x, v.x);
+            max_.y = std::max(max_.y, v.y);
+            max_.z = std::max(max_.z, v.z);
+        }
+    }
 };
 
 #endif //POLYTOPE_H

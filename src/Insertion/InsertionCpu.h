@@ -173,33 +173,37 @@ public:
 
     template<typename ParticleType>
     std::vector<ParticleType> fillRandomly2D(std::vector<ParticleType>& particles,
-                                         float3 boxMin,
-                                         float3 boxMax,
-                                         float minSpacing) {
+                                         float3 regionMin,
+                                         float3 regionMax) {
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_real_distribution distX(boxMin.x, boxMax.x);
-    std::uniform_real_distribution distY(boxMin.y, boxMax.y);
+    std::uniform_real_distribution distX(regionMin.x, regionMax.x);
+    std::uniform_real_distribution distY(regionMin.y, regionMax.y);
 
     int maxAttempts = 100;  // Maximum attempts to place a particle
     const size_t numParticles = particles.size();
+
     int valid = 0;
-    for (int i = 0; i < numParticles; ++i) {
+    for (int i = 0; i < numParticles; ++i)
+    {
         bool validPosition = false;
         int attempts = 0;
 
-        while (!validPosition && attempts < maxAttempts) {
+        while (!validPosition && attempts < maxAttempts)
+        {
             float testX = distX(gen);
             float testY = distY(gen);
-            float3 testPos = make_float3(testX, testY, boxMin.z); // Fixed Z plane
+            float3 testPos = make_float3(testX, testY, regionMin.z); // Fixed Z plane
 
             validPosition = true;
 
             // Check distance from all already placed particles
             for (int j = 0; j < i; ++j) {
                 float3 diff = testPos - particles[j].position;
-                float distance = std::sqrt(diff.x * diff.x + diff.y * diff.y);
-                if (distance < minSpacing) {
+                float3 minSpacing = particles[j].boundingBox.getSize();
+
+                float distance = magSquared(diff);
+                if (distance < magSquared(minSpacing)) {
                     validPosition = false;
                     break;
                 }

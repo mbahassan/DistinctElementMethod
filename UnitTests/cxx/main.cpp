@@ -17,7 +17,6 @@ int main(int argc, char **argv)
 {
 
     auto config = Parser::getConfig("input.json");
-
     int N = config.numberOfParticles;
 
     Sphere sphere(0.1);
@@ -44,7 +43,7 @@ int main(int argc, char **argv)
     }
 
     Insertion insertion;
-    insertion.fillRandomly2D(poly, {0,0,0}, {2.,2.,0},0.01);
+    insertion.fillRandomly2D(poly, {0,0,0}, {2.,2.,0});
 
     ContactDetection<Polyhedral> cd("input.json");
     auto potential_pairs = cd.broadPhase(poly);

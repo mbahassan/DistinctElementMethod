@@ -21,6 +21,7 @@ public:
 
     // Run the complete contact detection pipeline
     std::vector<EPA::Contact> detectContacts(std::vector<ParticleType>& particles) {
+
         // Initialize the broad phase (build the spatial data structure)
         broadPhase_.initialize(particles);
 
