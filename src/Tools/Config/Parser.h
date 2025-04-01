@@ -24,11 +24,16 @@ class Parser
         result.restart = true;
         result.numberOfParticles = data["Simulation"]["numberOfParticles"];
 
-        result.materialConfigPath= data["Simulation"]["materialConfigPath"];
-        result.shapeConfigPath = data["Simulation"]["shapeConfigPath"];
+        result.materialPath= data["Simulation"]["materialPath"];
+        result.shapePath = data["Simulation"]["shapePath"];
 
-        solveRelativePath(result.materialConfigPath, path);
-        solveRelativePath(result.shapeConfigPath, path);
+        result.treeType_ = data["ContactDetection"]["BroadPhase"]["treeType"];
+        result.maxDepth = data["ContactDetection"]["BroadPhase"]["maxDepth"];
+        result.minPointsPerNode = data["ContactDetection"]["BroadPhase"]["minPointsPerNode"];
+
+
+        solveRelativePath(result.materialPath, path);
+        solveRelativePath(result.shapePath, path);
 
         return result;
     }

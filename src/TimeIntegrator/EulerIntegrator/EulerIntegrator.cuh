@@ -6,21 +6,49 @@
 #define EULERINTEGRATOR_CUH
 
 #include <Particle/Spherical.hpp>
-#include <Base/Base.cuh>
+#include "EulerIntegratorKernel.cuh"
+#include <Simulate/Base/Base.cuh>
+#include <Tools/CudaHelper.hpp>
 
+
+template<typename ParticleType>
 class EulerIntegrator :public Base
 {
 public:
-  EulerIntegrator(const Spherical* particle, float dt, int size);
+  EulerIntegrator() = default;
 
   ~EulerIntegrator();
 
-  void eulerIntegratorKernel() const ;
 
-  private:
-  Spherical* devParticle = nullptr;
+  void eulerStep(std::vector<ParticleType>& particles, float dt)
+  {
+    size_t particlesCount = particles.size();
+    ParticleType* particlesHost = particles.data();
+    std::cout << "Euler Integrator() " << particlesCount << " particles\n";
 
-  int size_;
+
+    hostToDevice(particlesHost, particlesCount, &devParticle);
+
+    auto startTime = std::chrono::high_resolution_clock::now();
+
+    // Run Euler Integrator kernel
+    EulerIntegratorKernel<<<1, threadsPerBlock>>>(devParticle, particlesCount, dt);
+    GET_CUDA_ERROR("EulerIntegratorKernelError");
+
+    cudaDeviceSynchronize();
+    GET_CUDA_ERROR("EulerIntegratorKernelSyncError");
+
+    auto endTime = std::chrono::high_resolution_clock::now();
+    std::cout << "Euler Integrator Kernel() duration: " <<
+        (std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count()) << std::endl;
+
+  }
+
+
+
+private:
+  ParticleType* devParticle = nullptr;
+
 };
 
 

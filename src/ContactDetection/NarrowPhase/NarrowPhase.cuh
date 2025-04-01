@@ -20,18 +20,19 @@ public:
     NarrowPhase() = default;
 
     // Detect collisions using GJK + EPA
+    template<typename ParticleType>
     std::vector<EPA::Contact> detectCollisions(
-        const std::vector<Spherical>& particles,
+        const std::vector<ParticleType>& particles,
         const std::vector<PotentialContact>& potentialContacts) {
 
         std::vector<EPA::Contact> contacts;
 
         for (const auto& potentialContact : potentialContacts) {
-            const Spherical& particleA = particles[potentialContact.particleIdI];
-            const Spherical& particleB = particles[potentialContact.particleIdJ];
+            const ParticleType& particleA = particles[potentialContact.particleIdI];
+            const ParticleType& particleB = particles[potentialContact.particleIdJ];
 
             // Skip if the particles are the same
-            if (particleA.getId() == particleB.getId()) {
+            if (particleA.id == particleB.id) {
                 continue;
             }
 

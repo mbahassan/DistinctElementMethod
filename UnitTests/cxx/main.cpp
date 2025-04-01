@@ -20,10 +20,9 @@ int main(int argc, char **argv)
     int N = config.numberOfParticles;
 
     Sphere sphere(0.1);
-    Material glass(config.materialConfigPath);
+    Material glass(config.materialPath);
 
     Polytope cube("sphere.stl");
-
 
 
     std::vector<Polyhedral> poly(N);
@@ -45,9 +44,15 @@ int main(int argc, char **argv)
     Insertion insertion;
     insertion.fillRandomly2D(poly, {0,0,0}, {2.,2.,0});
 
+    /// Remove unfilled positions from the particle vector
+    auto isPositionValid = [&](const Polyhedral& p){
+        return p.position.x == 0.0f && p.position.y == 0.0f && p.position.z == 0.0f;
+    };
+    std::erase_if(poly, isPositionValid);
+
     ContactDetection<Polyhedral> cd("input.json");
     auto potential_pairs = cd.broadPhase(poly);
-    // auto actual_contacts = cd.runNarrowPhase(particles, potential_pairs);
+    auto actual_contacts = cd.narrowPhase(poly, potential_pairs);
 
     Output output("results");
     output.writeParticles(particles, 0);

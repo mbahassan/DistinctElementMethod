@@ -58,7 +58,7 @@ public:
 
     Shape::ShapeType shapeType = Shape::POLYHEDRAL;
 
-    float3 position{0.f, 0.f, 0.f};      // Position in 3D space
+    float3 position {0.f, 0.f, 0.f};      // Position in 3D space
     Quaternion orientation;
 
 
@@ -68,8 +68,8 @@ public:
     unsigned int* solids = nullptr;
 
     unsigned int numVertices = 0;
-    unsigned int numNormals =0 ;
-    unsigned int numSolids = 0;
+    unsigned int numNormals  = 0 ;
+    unsigned int numSolids   = 0;
     unsigned int numTriangles = 0;
 
     float volume_ = 0.0f;

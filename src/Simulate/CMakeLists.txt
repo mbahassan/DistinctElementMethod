@@ -1,11 +1,24 @@
-set(LIB_NAME Base)
+set(LIB_NAME Simulation)
 
 set(SOURCES
-        Base.cu
+        Simulate.cpp
+
+        # Device Base Class
+        Base/Base.cu
 )
+
+# Enable CUDA dynamic parallelism
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -rdc=true")
+
 
 add_library( ${LIB_NAME} SHARED  ${SOURCES})
 install( TARGETS ${LIB_NAME} DESTINATION lib)
+
+# Add these properties
+set_target_properties(${LIB_NAME} PROPERTIES
+        CUDA_SEPARABLE_COMPILATION ON
+        CUDA_RESOLVE_DEVICE_SYMBOLS ON
+)
 
 target_link_libraries(${LIB_NAME} PUBLIC CUDA::cudart)
 

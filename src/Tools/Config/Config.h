@@ -6,6 +6,7 @@
 #define CONFIG_H
 
 #include <string>
+#include <ContactDetection/BroadPhase/Config/TreeType.h>
 
 
 struct Config
@@ -14,8 +15,14 @@ struct Config
   int numberOfParticles;
 
   /// Collection of the needed paths
-  std::string shapeConfigPath;
-  std::string materialConfigPath;
+  std::string shapePath;
+  std::string materialPath;
+
+
+  /// Contact Detection
+  TreeType treeType_;
+  int maxDepth;
+  int minPointsPerNode;
 
 
   /// Restarting simulation default yes

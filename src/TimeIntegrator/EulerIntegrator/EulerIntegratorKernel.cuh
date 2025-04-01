@@ -8,7 +8,8 @@
 #include "Particle/Spherical.hpp"
 #include "Tools/ArthmiticOperator/MathOperators.hpp"
 
-__global__ void EulerIntegratorKernel(Spherical *particle, const float dt, const int size_)
+template<typename ParticleType>
+__global__ void EulerIntegratorKernel(ParticleType *particle, const float dt, const int size_)
 {
   int idx = blockDim.x * blockIdx.x + threadIdx.x;
   if (idx >= size_) return;

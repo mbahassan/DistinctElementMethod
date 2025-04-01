@@ -6,16 +6,9 @@
 #include "Tools/CudaHelper.hpp"
 #include "EulerIntegratorKernel.cuh"
 
-EulerIntegrator::EulerIntegrator(const Spherical* particle, float dt, const int size)
-{
-    hostToDevice(particle, size_, &devParticle);
 
-    EulerIntegratorKernel<<<2, threadsPerBlock>>>(devParticle, dt, size);
-
-
-}
-
-EulerIntegrator::~EulerIntegrator()
+template<typename ParticleType>
+EulerIntegrator<ParticleType>::~EulerIntegrator()
 {
   cudaFree(devParticle);
 }
