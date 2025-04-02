@@ -1,10 +1,8 @@
-set(LIB_NAME TimeIntegrator)
+set(LIB_NAME ForceModels)
 
 set(SOURCES
-        TimeIntegrator.cu
-        EulerIntegrator/EulerIntegrator.cu
-        EulerIntegrator/EulerIntegratorKernel.cu
-        VerletIntegrator/VerletIntegrator.cu
+        ForceModel.cu
+        LinearSpringDashPot/LSD.cu
 )
 
 add_library( ${LIB_NAME} SHARED  ${SOURCES})

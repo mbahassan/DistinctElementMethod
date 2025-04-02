@@ -2,10 +2,10 @@
 // Created by iqraa on 1-4-25.
 //
 
-#ifndef TIMEINTEGRATOR_H
-#define TIMEINTEGRATOR_H
+#ifndef TIME_INTEGRATOR_H
+#define TIME_INTEGRATOR_H
 
-#include "EulerIntegrator/EulerIntegrator.cuh"
+#include "EulerIntegrator/EulerIntegrator.h"
 #include "VerletIntegrator/VerletIntegrator.h"
 
 enum Integrator
@@ -22,10 +22,11 @@ public:
     explicit TimeIntegrator(const Integrator method = Euler): method_(method) {
     }
 
-    template<typename ParticleType>
+
     void step(const std::vector<ParticleType> &particles, const double dt)
     {
-        if (method_ == Euler) {
+        if (method_ == Euler)
+        {
             eulerIntegrator_ = std::make_unique<EulerIntegrator<ParticleType>>();
             eulerIntegrator_->eulerStep(particles, dt);
         } else if (method_ == Verlet)
@@ -42,4 +43,4 @@ private:
 };
 
 
-#endif //TIMEINTEGRATOR_H
+#endif //TIME_INTEGRATOR_H

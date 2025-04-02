@@ -1,7 +1,7 @@
 set(LIB_NAME Simulation)
 
 set(SOURCES
-        Simulate.cpp
+        Simulate.cu
 
         # Device Base Class
         Base/Base.cu

@@ -1,4 +1,5 @@
 add_subdirectory(ContactDetection)
+add_subdirectory(ForceModels)
 add_subdirectory(Insertion)
 add_subdirectory(Output)
 add_subdirectory(Particle)

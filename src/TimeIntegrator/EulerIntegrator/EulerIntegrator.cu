@@ -2,9 +2,7 @@
 // Created by iqraa on 27-2-25.
 //
 
-#include "EulerIntegrator.cuh"
-#include "Tools/CudaHelper.hpp"
-#include "EulerIntegratorKernel.cuh"
+#include "EulerIntegrator.h"
 
 
 template<typename ParticleType>

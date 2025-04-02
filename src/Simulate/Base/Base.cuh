@@ -14,6 +14,7 @@ public:
     void printDeviceInfo() const;
 
     int threadsPerBlock = 1024;
+
     int numberOfBlocks = 256;
 private:
     cudaDeviceProp deviceProperties{};

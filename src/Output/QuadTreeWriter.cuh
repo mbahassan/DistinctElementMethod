@@ -1,3 +1,7 @@
+
+#ifndef QUADTREE_WRITER_H
+#define QUADTREE_WRITER_H
+
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -5,7 +9,7 @@
 #include <iomanip>
 #include <filesystem>
 #include <ContactDetection/BroadPhase/QuadTree/QuadTree.h>
-#include <Particle/Spherical.hpp>
+#include <Particle/Spherical.h>
 #include <ContactDetection/BroadPhase/Config/TreeConfig.h>
 
 class QuadTreeWriter {
@@ -230,3 +234,6 @@ private:
         nodeIds.push_back(node->id);
     }
 };
+
+
+#endif //QUADTREE_WRITER_H

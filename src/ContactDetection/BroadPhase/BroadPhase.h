@@ -10,7 +10,7 @@
 #include <ContactDetection/BroadPhase/QuadTree/QuadTreeBuilder.cuh>
 #include <ContactDetection/BroadPhase/Config/TreeType.h>
 #include <Output/QuadTreeWriter.cuh>
-#include <Particle/Spherical.hpp>
+#include <Particle/Spherical.h>
 
 #include "Tools/CudaHelper.hpp"
 

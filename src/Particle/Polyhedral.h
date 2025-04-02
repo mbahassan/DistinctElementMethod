@@ -59,6 +59,7 @@ public:
     Shape::ShapeType shapeType = Shape::POLYHEDRAL;
 
     float3 position {0.f, 0.f, 0.f};      // Position in 3D space
+    float3 velocity {0.f, 0.f, 0.f};      // Velocity in 3D space
     Quaternion orientation;
 
 

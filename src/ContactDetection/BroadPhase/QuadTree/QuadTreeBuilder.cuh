@@ -5,8 +5,8 @@
 #ifndef QUADTREEBUILDER_H
 #define QUADTREEBUILDER_H
 
-#include <Particle/Spherical.hpp>
-#include <Particle/Polyhedral.hpp>
+#include <Particle/Spherical.h>
+#include <Particle/Polyhedral.h>
 
 #include "QuadTree.h"
 #include "ContactDetection/BroadPhase/ITreeBuilder.h"

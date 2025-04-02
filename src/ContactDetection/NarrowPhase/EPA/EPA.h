@@ -8,7 +8,7 @@
 #include <vector>
 #include <limits>
 #include <algorithm>
-#include "Particle/Spherical.hpp"
+#include "Particle/Spherical.h"
 #include "ContactDetection/NarrowPhase/Simplex/Simplex.h"
 
 

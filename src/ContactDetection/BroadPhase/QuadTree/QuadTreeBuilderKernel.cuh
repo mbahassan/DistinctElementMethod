@@ -8,7 +8,7 @@
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
 #include <cooperative_groups.h>
-namespace cg = cooperative_groups;
+// namespace cg = cooperative_groups;
 
 /*
 template<int NUM_THREADS_PER_BLOCK, class ParticleType>

@@ -8,7 +8,6 @@
 #include <vector>
 #include <ContactDetection/BroadPhase/BroadPhase.h>
 
-#include "Particle/Spherical.hpp"
 #include "ContactDetection/NarrowPhase/GJK/GJK.h"
 #include "ContactDetection/NarrowPhase/EPA/EPA.h"
 

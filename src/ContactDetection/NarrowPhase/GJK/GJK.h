@@ -6,7 +6,7 @@
 #define GJK_CUH
 
 #include <random>
-#include "Particle/Polyhedral.hpp"
+#include "Particle/Polyhedral.h"
 #include "ContactDetection/NarrowPhase/Simplex/Simplex.h"
 
 class GJK {

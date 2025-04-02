@@ -9,7 +9,7 @@
 #include <iostream>
 #include <vector>
 #include <random>
-// #include <Particle/Spherical.hpp>
+// #include <Particle/Spherical.h>
 #include <Particle/Polyhedral.hpp>
 
 

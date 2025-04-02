@@ -8,24 +8,26 @@
 #include <ContactDetection/ContactDetection.cuh>
 #include <ContactDetection/BroadPhase/Config/TreeType.h>
 #include <TimeIntegrator/TimeIntegrator.h>
+#include <ForceModels/ForceModel.cuh>
 
 template<typename ParticleType>
 class Simulate
 {
 public:
-    Simulate(const float dt = 0.001,
-        // const ForceModel forceModel = HertzMindelin,
-        const Integrator integrator = Euler,
-        const TreeType treeType = QUADTREE)
+    explicit Simulate(const float dt = 0.001,
+                      const Model forceModel = HertzMindlin,
+                      const Integrator integrator = Euler,
+                      const TreeType treeType = QUADTREE)
     {
         dt_ = dt;
         // forceModel_ = forceModel;
+
         integrator_ = integrator;
         treeType_ = treeType;
 
         contactDetection_ = ContactDetection<ParticleType>(treeType);
-        // forceModel_ = ForceModel<ParticleType>(forceModel);
-        timeIntegrator_ = TimeIntegrator(integrator);
+        forceModel_ = ForceModel<ParticleType>(forceModel);
+        timeIntegrator_ = TimeIntegrator<ParticleType>(integrator);
     }
 
     /// Advance the simulation by one timestep
@@ -83,14 +85,14 @@ public:
 private:
     float time_ = 0.0f;
     float dt_ = 0.0001;
-    // ForceModel forceModel_ = HertzMindelin;
+    // ForceModels forceModel_ = HertzMindelin;
     Integrator integrator_ = Euler;
     TreeType treeType_ = QUADTREE;
 
     /// Main Components
     ContactDetection<ParticleType> contactDetection_;
-    TimeIntegrator timeIntegrator_;
-
+    TimeIntegrator<ParticleType> timeIntegrator_;
+    ForceModel<ParticleType> forceModel_;
     std::vector<ParticleType> particles;
 };
 
