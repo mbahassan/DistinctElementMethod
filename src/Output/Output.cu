@@ -124,7 +124,8 @@ void Output::writeParticles(const std::vector<Polyhedral> &particles, const int 
 
     // Write all transformed vertices
     size_t vertexOffset = 0;
-    for (const auto& particle : particles) {
+    for (const auto& particle : particles)
+    {
         const Quaternion& q = particle.orientation;
         // Precompute the quaternion conjugate (inverse for unit quaternions)
         Quaternion qConj = q.conjugate();
@@ -180,8 +181,10 @@ void Output::writeParticles(const std::vector<Polyhedral> &particles, const int 
     // Offsets array - keeps track of where each face ends in connectivity
     vtpFile << "        <DataArray type=\"Int64\" Name=\"offsets\" format=\"ascii\">\n";
     size_t offset = 0;
-    for (const auto& particle : particles) {
-        for (size_t i = 0; i < particle.numTriangles; i++) {
+    for (const auto& particle : particles)
+    {
+        for (size_t i = 0; i < particle.numTriangles; i++)
+        {
             offset += 3;
             vtpFile << "          " << offset << "\n";
         }
@@ -189,28 +192,30 @@ void Output::writeParticles(const std::vector<Polyhedral> &particles, const int 
     vtpFile << "        </DataArray>\n";
     vtpFile << "      </Polys>\n";
 
-    // Point Data section
+    /// Point Data section
     vtpFile << "      <PointData>\n";
 
     // ParticleID attribute - helps identify which particle each vertex belongs to
     vtpFile << "        <DataArray type=\"Int32\" Name=\"VertexID\" format=\"ascii\" NumberOfComponents=\"1\">\n";
-    for (size_t particleIdx = 0; particleIdx < particles.size(); particleIdx++) {
-        const auto& particle = particles[particleIdx];
-        for (size_t i = 0; i < particle.numVertices; i++) {
+    for (const auto & particle : particles)
+    {
+        for (size_t i = 0; i < particle.numVertices; i++)
+        {
             vtpFile << "          " << particle.getId() << "\n";
         }
     }
     vtpFile << "        </DataArray>\n";
     vtpFile << "      </PointData>\n";
 
-    // Cell Data section (data for each face)
+    /// Cell Data section (data for each face)
     vtpFile << "      <CellData>\n";
 
     // ParticleID attribute for cells
     vtpFile << "        <DataArray type=\"Int32\" Name=\"CellsID\" format=\"ascii\" NumberOfComponents=\"1\">\n";
-    for (size_t particleIdx = 0; particleIdx < particles.size(); particleIdx++) {
-        const auto& particle = particles[particleIdx];
-        for (size_t i = 0; i < particle.numTriangles; i++) {
+    for (const auto & particle : particles)
+    {
+        for (size_t i = 0; i < particle.numTriangles; i++)
+        {
             vtpFile << "          " << particle.getId() << "\n";
         }
     }
@@ -218,8 +223,10 @@ void Output::writeParticles(const std::vector<Polyhedral> &particles, const int 
 
     // Velocity attribute
     vtpFile << "        <DataArray type=\"Float32\" Name=\"Velocity\" format=\"ascii\" NumberOfComponents=\"3\">\n";
-    for (const auto& particle : particles) {
-        for (size_t i = 0; i < particle.numTriangles; i++) {
+    for (const auto& particle : particles)
+    {
+        for (size_t i = 0; i < particle.numTriangles; i++)
+        {
             vtpFile << "          0 0 0\n";
         }
     }
@@ -227,8 +234,10 @@ void Output::writeParticles(const std::vector<Polyhedral> &particles, const int 
 
     // Angular velocity attribute
     vtpFile << "        <DataArray type=\"Float32\" Name=\"AngularVelocity\" format=\"ascii\" NumberOfComponents=\"3\">\n";
-    for (const auto& particle : particles) {
-        for (size_t i = 0; i < particle.numTriangles; i++) {
+    for (const auto& particle : particles)
+    {
+        for (size_t i = 0; i < particle.numTriangles; i++)
+        {
             vtpFile << "          0 0 0\n";
         }
     }
@@ -254,7 +263,7 @@ void Output::writeTree(const QuadTree* quadtree, int timestep)
     // config.size = {1,1,1};
 
 
-    std::string filename = createFilename("Quadtree_", timestep, ".vtu");
+    std::string filename = createFilename("Quadtree", timestep, ".vtu");
 
     // We need to pass the entire tree array, not just the root node
     const QuadTree* tree = quadtree;

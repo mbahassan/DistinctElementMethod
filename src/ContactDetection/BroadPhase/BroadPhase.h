@@ -48,7 +48,7 @@ public:
         {
             size_t particlesCount = particles.size();
             ParticleType* particlesHost = particles.data();
-            std::cout << "BroadPhase::initialize(): " << particlesCount << " particles\n";
+            std::cout << "\nContact Detection BroadPhase: \n";
 
             ParticleType* particlesDevice;
             hostToDevice(particlesHost, particlesCount, &particlesDevice);
@@ -57,7 +57,6 @@ public:
             treeBuilder->initialize(particlesCount);
             treeBuilder->build(particlesDevice, particlesCount);
 
-            // QuadTreeWriter::writeQuadTree("./results/quadtree_000000.vtu", &treeBuilder->getTree(), treeConfig_);
             deviceToHost(particlesDevice, particlesCount, particlesHost);
         }
     }
@@ -111,7 +110,7 @@ public:
             }
         }
 
-        std::cout << "Found " << potentialContacts.size() << " potential contacts" << std::endl;
+        std::cout << "- Quadtree potential contacts: " << potentialContacts.size() << std::endl;
         return potentialContacts;
     }
 

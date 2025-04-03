@@ -44,7 +44,7 @@ void QuadTreeBuilder<ParticleType>::build(ParticleType* points, const int size)
     this->tree->startId = 0;
     this->tree->endId = size;
 
-    std::cout << "Build()" << std::endl;
+    std::cout << "- Quadtree Build()" << std::endl;
 
     auto startTime = std::chrono::high_resolution_clock::now();
     const int warpsPerBlock = treeConfig.threadsPerBlock / 32;
@@ -68,7 +68,7 @@ void QuadTreeBuilder<ParticleType>::build(ParticleType* points, const int size)
     GET_CUDA_ERROR("SyncError");
 
     auto endTime = std::chrono::high_resolution_clock::now();
-    std::cout << "Kernel() duration: " <<
+    std::cout << "- Quadtree Kernel() duration: " <<
         (std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count()) << std::endl;
 
     QuadTree* tree2 = this->tree;
@@ -91,7 +91,7 @@ void QuadTreeBuilder<ParticleType>::build(ParticleType* points, const int size)
         tree2 += leafs;
     }
 
-    std::cout << "total points: " << totalCount << " / " << size << "\n";
+    std::cout << "- Quadtree total particles check: " << totalCount << " / " << size << "\n";
 
     if (totalCount != size)
     {
@@ -102,7 +102,7 @@ void QuadTreeBuilder<ParticleType>::build(ParticleType* points, const int size)
 template<typename ParticleType>
 void QuadTreeBuilder<ParticleType>::reset()
 {
-    std::cout << "Reset()" << std::endl;
+    std::cout << "- Quadtree Reset()" << std::endl;
     const int maxNodes = treeConfig.GetNodesCount();
 
     for (int i = 0; i < maxNodes; ++i)
@@ -118,6 +118,6 @@ void QuadTreeBuilder<ParticleType>::reset()
 template<typename ParticleType>
 QuadTreeBuilder<ParticleType>::~QuadTreeBuilder()
 {
-    //cudaFree(pointsExch);
-    //cudaFree(this->tree);
+    cudaFree(pointsExch);
+    cudaFree(this->tree);
 }

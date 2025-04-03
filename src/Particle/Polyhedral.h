@@ -63,10 +63,10 @@ public:
 
     float volume = 0.0f;
     float mass = 0.0f;
-    float3 position {0.f, 0.f, 0.f};      // Position in 3D space
-    float3 velocity {0.f, 0.f, 0.f};      // Velocity in 3D space
-    float3 force {0.f, 0.f, 0.f};         // Force in 3D space
-
+    float3 position = {0.f, 0.f, 0.f};      // Position in 3D space
+    float3 velocity = {0.f, 0.f, 0.f};      // Velocity in 3D space
+    float3 force = {0.f, 0.f, 0.f};         // Force in 3D space
+    float3 torque = {0.f,0.f,0.f};
     Quaternion orientation;
 
 

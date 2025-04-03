@@ -47,13 +47,11 @@ output_(outputDir)
     {
         unsigned int counter = 0;
         // write 0 timestep
-        output_.writeParticles(particles_, counter);
+        // output_.writeParticles(particles_, counter);
 
 
         while(time_ < endTime)
         {
-            /// increment counter
-            counter++;
 
             /// perform one time step
             oneTimeStep();
@@ -66,6 +64,9 @@ output_(outputDir)
             output_.writeTree(&cd_.getTreeBuilder()->getTree(), counter);
 
             ///  - Checking termination conditions
+
+            /// increment counter
+            counter++;
 
             // Update the time
             time_ += dt_;
@@ -95,8 +96,8 @@ private:
         // Reset forces
         for (auto &p: particles_)
         {
-            // p.force = 0;
-            // p.torque = 0;
+            p.force =  {0.f, 0.f, 0.f};
+            p.torque = {0.f, 0.f, 0.f};
 
         }
 

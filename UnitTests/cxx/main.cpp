@@ -1,10 +1,7 @@
 
 // includes, system
 
-
 // Required to include CUDA vector types
-#include <cuda_runtime.h>
-#include <ContactDetection/ContactDetection.cuh>
 #include <Particle/Spherical.h>
 #include <Particle/Polyhedral.h>
 

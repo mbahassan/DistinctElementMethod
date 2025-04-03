@@ -30,17 +30,6 @@ public:
         // Store a copy of the original tree pointer
         const QuadTree* originalTree = tree;
 
-        // Print debug info to understand the tree structure
-        std::cout << "===== QuadTree Debug Info =====" << std::endl;
-        std::cout << "Root ID: " << tree->id << std::endl;
-        std::cout << "Root Bounds: (" << tree->bounds.min.x << "," << tree->bounds.min.y << ") to ("
-                 << tree->bounds.max.x << "," << tree->bounds.max.y << ")" << std::endl;
-        std::cout << "Root Particles: " << (tree->endId - tree->startId) << std::endl;
-        std::cout << "Max Depth: " << config.maxDepth << std::endl;
-
-        // Inspect first few nodes to understand the tree layout
-        std::cout << "\nFlattened Tree Inspection:" << std::endl;
-        std::cout << "Index\tID\tParticles\tBounds" << std::endl;
 
         // Make a temporary copy of the tree pointer for inspection
         const QuadTree* inspectionTree = tree;
@@ -55,17 +44,9 @@ public:
             if (depth + 1 < config.maxDepth) {
                 depthStartPointers.push_back(inspectionTree + leafs);
             }
-
-            for (int leaf = 0; leaf < leafs; ++leaf) {
-                const QuadTree* node = &inspectionTree[leaf];
-                int particleCount = node->endId - node->startId;
-                std::cout << leaf << "\t" << node->id << "\t" << particleCount << "\t\t("
-                         << node->bounds.min.x << "," << node->bounds.min.y << ") to ("
-                         << node->bounds.max.x << "," << node->bounds.max.y << ")" << std::endl;
-            }
             inspectionTree += leafs;
         }
-        std::cout << "=============================" << std::endl;
+
 
         // Data structures for collecting QuadTree information
         std::vector<float3> points;
@@ -81,16 +62,16 @@ public:
             const auto nodesAtDepth = getNumNodesInCurrentDepth<2>(depth);
             const QuadTree* depthTree = depthStartPointers[depth];
 
-            std::cout << "Processing depth " << depth << " with " << nodesAtDepth << " nodes" << std::endl;
+            // std::cout << "Processing depth " << depth << " with " << nodesAtDepth << " nodes" << std::endl;
 
             for (int nodeIdx = 0; nodeIdx < nodesAtDepth; nodeIdx++) {
                 const QuadTree* node = &depthTree[nodeIdx];
 
                 // Only process nodes with particles
                 if (node->startId < node->endId) {
-                    std::cout << "  Node ID " << node->id
-                             << " with " << (node->endId - node->startId)
-                             << " particles" << std::endl;
+                    // std::cout << "  Node ID " << node->id
+                    //          << " with " << (node->endId - node->startId)
+                    //          << " particles" << std::endl;
 
                     collectNodeData(node, depth, points, cells, offsets, cellTypes,
                                    leafDepths, pointCounts, nodeIds);
@@ -182,7 +163,7 @@ public:
 
         file.close();
 
-        std::cout << "VTK file written with " << cellTypes.size() << " cells." << std::endl;
+        std::cout << "- Output Quadtree VTK file with " << cellTypes.size() << " cells." << std::endl;
     }
 
 private:

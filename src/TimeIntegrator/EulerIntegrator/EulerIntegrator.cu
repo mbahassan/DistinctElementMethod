@@ -13,7 +13,7 @@ void EulerIntegrator<ParticleType>::eulerStep(std::vector<ParticleType>& particl
 {
     size_t particlesCount = particles.size();
     ParticleType* particlesHost = particles.data();
-    std::cout << "Euler Integrator() \n";
+    std::cout << "\nEuler Integrator: \n";
 
 
     hostToDevice(particlesHost, particlesCount, &devParticle);
@@ -30,6 +30,6 @@ void EulerIntegrator<ParticleType>::eulerStep(std::vector<ParticleType>& particl
     deviceToHost(devParticle, particlesCount, particlesHost);
 
     auto endTime = std::chrono::high_resolution_clock::now();
-    std::cout << "Euler Integrator Kernel() duration: " <<
+    std::cout << "- Euler Kernel() duration: " <<
         (std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count()) << std::endl;
 }
