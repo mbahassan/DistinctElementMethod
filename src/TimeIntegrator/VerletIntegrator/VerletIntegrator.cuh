@@ -6,7 +6,6 @@
 #define VERLETINTEGRATOR_H
 
 #include <Particle/Polyhedral.h>
-#include <Tools/CudaHelper.hpp>
 #include <Simulate/Base/Base.cuh>
 
 #include "VerletIntegratorKernel.cuh"
@@ -20,7 +19,7 @@ public:
 
     ~VerletIntegrator();
 
-    void verletStep(std::vector<ParticleType>& particles, float dt);
+    void verletStep(ParticleType* particlesHost, size_t particlesCount, float dt);
 
 private:
     ParticleType* devParticle = nullptr;

@@ -12,7 +12,6 @@
 
 int main(int argc, char **argv)
 {
-
     auto config = Parser::getConfig("input.json");
     int N = config.numberOfParticles;
 
@@ -43,7 +42,7 @@ int main(int argc, char **argv)
     /// Simulate
     Simulate<Polyhedral> simulate(0.0001, LSD, Euler, "input.json");
     simulate.addParticles(poly);
-    simulate.solve(3*0.0001);
+    simulate.solve(0.3);
 
     return 0;
 }

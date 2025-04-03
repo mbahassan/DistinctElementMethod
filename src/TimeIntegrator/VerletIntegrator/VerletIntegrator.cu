@@ -3,7 +3,7 @@
 //
 
 #include "VerletIntegrator.cuh"
-
+#include <Tools/CudaHelper.hpp>
 
 template<typename ParticleType>
 VerletIntegrator<ParticleType>::~VerletIntegrator()
@@ -13,10 +13,10 @@ VerletIntegrator<ParticleType>::~VerletIntegrator()
 
 
 template<typename ParticleType>
-void VerletIntegrator<ParticleType>::verletStep(std::vector<ParticleType>& particles, const float dt)
+void VerletIntegrator<ParticleType>::verletStep(ParticleType* particlesHost,size_t particlesCount, const float dt)
 {
-    size_t particlesCount = particles.size();
-    ParticleType* particlesHost = particles.data();
+//    size_t particlesCount = particles.size();
+//    ParticleType* particlesHost = particles.data();
     std::cout << "Verlet Integrator() " << particlesCount << " particles\n";
 
 
@@ -34,4 +34,6 @@ void VerletIntegrator<ParticleType>::verletStep(std::vector<ParticleType>& parti
     auto endTime = std::chrono::high_resolution_clock::now();
     std::cout << "Verlet Integrator Kernel() duration: " <<
         (std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count()) << std::endl;
+
+    deviceToHost(devParticle, particlesCount, particlesHost);
 }

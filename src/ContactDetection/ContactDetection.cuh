@@ -22,8 +22,11 @@ public:
     // Run the complete contact detection pipeline
     std::vector<Contact> detectContacts(std::vector<ParticleType>& particles)
     {
+        size_t particlesCount = particles.size();
+        ParticleType* particlesHost = particles.data();
+
         // Initialize the broad phase (build the spatial data structure)
-        this->initialization(particles);
+        this->initialization(particlesHost, particlesCount);
 
         // Run broad phase to get potential contacts
         std::vector<PotentialContact> potentialContacts = this->getPotentialContacts(particles);
@@ -35,8 +38,11 @@ public:
     // You can also provide separate methods if needed
     std::vector<PotentialContact> broadPhase(std::vector<ParticleType>& particles)
     {
-        initialization(particles);
-        return getPotentialContacts(particles);
+        size_t particlesCount = particles.size();
+        ParticleType* particlesHost = particles.data();
+
+        this->initialization(particlesHost, particlesCount);
+        return this->getPotentialContacts(particles);
     }
 
     std::vector<Contact> narrowPhase(

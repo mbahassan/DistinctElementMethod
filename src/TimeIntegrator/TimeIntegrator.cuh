@@ -16,21 +16,23 @@ enum Integrator
 
 
 template<typename ParticleType>
-class TimeIntegrator
+class TimeIntegrator : public EulerIntegrator<ParticleType>
 {
 public:
     explicit TimeIntegrator(const Integrator method = Euler): method_(method) {}
 
     void integrate(std::vector<ParticleType> &particles, const double dt)
     {
+        size_t particlesCount = particles.size();
+        ParticleType* particlesHost = particles.data();
         if (method_ == Euler)
         {
             eulerIntegrator_ = std::make_unique<EulerIntegrator<ParticleType>>();
-            eulerIntegrator_->eulerStep(particles, dt);
+            eulerIntegrator_->eulerStep(particlesHost, particlesCount, dt);
         } else if (method_ == Verlet)
         {
             verletIntegrator_ = std::make_unique<VerletIntegrator<ParticleType>>();
-            verletIntegrator_->verletStep(particles, dt);
+            verletIntegrator_->verletStep(particlesHost, particlesCount, dt);
         }
     }
 
@@ -38,6 +40,8 @@ private:
     std::unique_ptr<EulerIntegrator<ParticleType>> eulerIntegrator_;
     std::unique_ptr<VerletIntegrator<ParticleType>> verletIntegrator_;
     Integrator method_;
+
+    
 };
 
 

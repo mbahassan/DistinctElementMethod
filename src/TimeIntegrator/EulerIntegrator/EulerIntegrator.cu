@@ -9,10 +9,10 @@
 
 
 template<typename ParticleType>
-void EulerIntegrator<ParticleType>::eulerStep(std::vector<ParticleType>& particles, const float dt)
+void EulerIntegrator<ParticleType>::eulerStep(ParticleType* particlesHost, size_t particlesCount, const float dt)
 {
-    size_t particlesCount = particles.size();
-    ParticleType* particlesHost = particles.data();
+    // size_t particlesCount = particles.size();
+    // ParticleType* particlesHost = particles.data();
     std::cout << "\nEuler Integrator: \n";
 
 

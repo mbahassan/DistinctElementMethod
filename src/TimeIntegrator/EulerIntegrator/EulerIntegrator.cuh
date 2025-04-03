@@ -21,7 +21,7 @@ public:
     cudaFree(devParticle);
   }
 
-  void eulerStep(std::vector<ParticleType>& particles, float dt);
+  void eulerStep(ParticleType* particlesHost, size_t particlesCount, float dt);
 
 
 private:
