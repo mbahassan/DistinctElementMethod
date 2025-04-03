@@ -9,7 +9,7 @@
 
 struct TreeConfig
 {
-    TreeType type = QUADTREE;
+    TreeType type = Quadtree;
     float3 origin = {0.0f,0.0f,0.0f};
     float3 size =  {2.0f,2.0f,2.0f};
 

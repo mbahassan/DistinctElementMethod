@@ -22,7 +22,8 @@ struct PotentialContact
 
 
 template<class ParticleType>
-class BroadPhase {
+class BroadPhase
+{
 public:
 
     explicit BroadPhase(const std::string& path)
@@ -41,9 +42,9 @@ public:
     }
 
 
-    void initialize(std::vector<ParticleType>& particles)
+    void initialization(std::vector<ParticleType>& particles)
     {
-        if (treeType_ == QUADTREE)
+        if (treeType_ == Quadtree)
         {
             size_t particlesCount = particles.size();
             ParticleType* particlesHost = particles.data();
@@ -56,8 +57,8 @@ public:
             treeBuilder->initialize(particlesCount);
             treeBuilder->build(particlesDevice, particlesCount);
 
-            QuadTreeWriter::writeQuadTree("./results/quadtree_000000.vtu", &treeBuilder->getTree(), treeConfig_);
-            deviceToHost(particlesDevice, particlesCount, &particlesHost);
+            // QuadTreeWriter::writeQuadTree("./results/quadtree_000000.vtu", &treeBuilder->getTree(), treeConfig_);
+            deviceToHost(particlesDevice, particlesCount, particlesHost);
         }
     }
 
@@ -114,6 +115,8 @@ public:
         return potentialContacts;
     }
 
+    auto getTreeBuilder() {return treeBuilder.get();}
+
 private:
 
     static void checkContactsInLeaf(
@@ -133,9 +136,9 @@ private:
                 if (p1.boundingBox.Check(p2.boundingBox.min) ||
                     p1.boundingBox.Check(p2.boundingBox.max)) {
                     // Create a contact pair and add to our vector
-                    PotentialContact contact;
-                    contact.particleIdI = p1.id;
-                    contact.particleIdJ = p2.id;
+                    PotentialContact contact{};
+                    contact.particleIdI = p1.getId();
+                    contact.particleIdJ = p2.getId();
                     contacts.push_back(contact);
                 }
             }
@@ -163,8 +166,8 @@ private:
 
                 // Create a unique pair ID to avoid duplicate checks
                 // (using min/max to ensure order doesn't matter)
-                int minId = std::min(p1.id, p2.id);
-                int maxId = std::max(p1.id, p2.id);
+                int minId = std::min(p1.getId(), p2.getId());
+                int maxId = std::max(p1.getId(), p2.getId());
                 uint64_t pairId = (static_cast<uint64_t>(minId) << 32) | maxId;
 
                 // Skip if we've already processed this pair
@@ -176,9 +179,9 @@ private:
                 if (p1.boundingBox.Check(p2.boundingBox.min) ||
                     p1.boundingBox.Check(p2.boundingBox.max)) {
                     // Create a contact pair and add to our vector
-                    PotentialContact contact;
-                    contact.particleIdI = p1.id;
-                    contact.particleIdJ = p2.id;
+                    PotentialContact contact{};
+                    contact.particleIdI = p1.getId();
+                    contact.particleIdJ = p2.getId();
                     contacts.push_back(contact);
                 }
             }
@@ -204,7 +207,6 @@ private:
     TreeType  treeType_;
     TreeConfig treeConfig_;
     std::unique_ptr<QuadTreeBuilder<ParticleType>> treeBuilder;
-
 };
 
 

@@ -10,7 +10,7 @@
 #include <vector>
 #include <random>
 // #include <Particle/Spherical.h>
-#include <Particle/Polyhedral.hpp>
+#include <Particle/Polyhedral.h>
 
 
 class Insertion {

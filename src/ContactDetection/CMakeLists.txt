@@ -29,7 +29,9 @@ set_target_properties(${LIB_NAME} PROPERTIES
         CUDA_RESOLVE_DEVICE_SYMBOLS ON
 )
 
-target_link_libraries(${LIB_NAME} PUBLIC CUDA::cudart)
+target_link_libraries(${LIB_NAME}
+        PUBLIC
+        CUDA::cudart)
 
 # Include headers from the current directory
 target_include_directories(${LIB_NAME}

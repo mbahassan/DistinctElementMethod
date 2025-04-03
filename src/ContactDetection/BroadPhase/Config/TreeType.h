@@ -5,6 +5,6 @@
 #ifndef TREETYPE_H
 #define TREETYPE_H
 
-enum TreeType {OCTREE, QUADTREE, KDTREE};
+enum TreeType {Octree, Quadtree, Kdtree};
 
 #endif //TREETYPE_H

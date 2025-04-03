@@ -8,7 +8,10 @@ set(SOURCES
 add_library( ${LIB_NAME} SHARED  ${SOURCES})
 install( TARGETS ${LIB_NAME} DESTINATION lib)
 
-target_link_libraries(${LIB_NAME} PUBLIC CUDA::cudart Particle)
+target_link_libraries(${LIB_NAME}
+        PUBLIC
+        CUDA::cudart
+        Particle)
 
 # Include headers from the current directory
 target_include_directories(${LIB_NAME}

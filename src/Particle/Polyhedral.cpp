@@ -1,4 +1,4 @@
-#include "Polyhedral.hpp"
+#include "Polyhedral.h"
 
 #include <cmath>
 #include <Tools/ArthmiticOperator/MathOperators.hpp>

@@ -9,10 +9,11 @@
 void Output::writeParticles(const std::vector<Spherical> &particles, const int timestep) {
 
     // Create filename with zero-padded timestep
-    std::string filename = createFilename("particles", timestep, "Spherical.vtp");
+    std::string filename = createFilename("Particles_Spherical", timestep, ".vtp");
     std::ofstream vtpFile(filename);
 
-    if (!vtpFile.is_open()) {
+    if (!vtpFile.is_open())
+    {
         std::cerr << "Error: Could not open file " << filename << std::endl;
         return;
     }
@@ -83,9 +84,10 @@ void Output::writeParticles(const std::vector<Spherical> &particles, const int t
 }
 
 
-void Output::writeParticles(const std::vector<Polyhedral> &particles, const int timestep) {
+void Output::writeParticles(const std::vector<Polyhedral> &particles, const int timestep)
+{
     // Create filename with zero-padded timestep
-    std::string filename = createFilename("particles", timestep, "Poly.vtp");
+    std::string filename = createFilename("Particles_Poly", timestep, ".vtp");
     std::ofstream vtpFile(filename);
 
     if (!vtpFile.is_open()) {
@@ -191,11 +193,11 @@ void Output::writeParticles(const std::vector<Polyhedral> &particles, const int 
     vtpFile << "      <PointData>\n";
 
     // ParticleID attribute - helps identify which particle each vertex belongs to
-    vtpFile << "        <DataArray type=\"Int32\" Name=\"ParticleID\" format=\"ascii\" NumberOfComponents=\"1\">\n";
+    vtpFile << "        <DataArray type=\"Int32\" Name=\"VertexID\" format=\"ascii\" NumberOfComponents=\"1\">\n";
     for (size_t particleIdx = 0; particleIdx < particles.size(); particleIdx++) {
         const auto& particle = particles[particleIdx];
         for (size_t i = 0; i < particle.numVertices; i++) {
-            vtpFile << "          " << particle.id << "\n";
+            vtpFile << "          " << particle.getId() << "\n";
         }
     }
     vtpFile << "        </DataArray>\n";
@@ -205,11 +207,11 @@ void Output::writeParticles(const std::vector<Polyhedral> &particles, const int 
     vtpFile << "      <CellData>\n";
 
     // ParticleID attribute for cells
-    vtpFile << "        <DataArray type=\"Int32\" Name=\"ParticleID\" format=\"ascii\" NumberOfComponents=\"1\">\n";
+    vtpFile << "        <DataArray type=\"Int32\" Name=\"CellsID\" format=\"ascii\" NumberOfComponents=\"1\">\n";
     for (size_t particleIdx = 0; particleIdx < particles.size(); particleIdx++) {
         const auto& particle = particles[particleIdx];
         for (size_t i = 0; i < particle.numTriangles; i++) {
-            vtpFile << "          " << particle.id << "\n";
+            vtpFile << "          " << particle.getId() << "\n";
         }
     }
     vtpFile << "        </DataArray>\n";
@@ -252,7 +254,7 @@ void Output::writeTree(const QuadTree* quadtree, int timestep)
     // config.size = {1,1,1};
 
 
-    std::string filename = createFilename("quadtree", timestep, ".vtu");
+    std::string filename = createFilename("Quadtree_", timestep, ".vtu");
 
     // We need to pass the entire tree array, not just the root node
     const QuadTree* tree = quadtree;

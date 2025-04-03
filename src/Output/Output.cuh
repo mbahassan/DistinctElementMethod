@@ -7,8 +7,8 @@
 
 #include <vector>
 #include <ContactDetection/BroadPhase/QuadTree/QuadTree.h>
-#include <Particle/Polyhedral.hpp>
-#include <Particle/Spherical.hpp>
+#include <Particle/Polyhedral.h>
+#include <Particle/Spherical.h>
 
 class Output {
 public:
@@ -38,7 +38,7 @@ private:
         std::ostringstream filename;
         filename << output_dir << "/"
                  << prefix << "_"
-                 << std::setfill('0') << std::setw(6) << timestep
+                 << std::setfill('0') << std::setw(3) << timestep
                  << extension;
         return filename.str();
     }

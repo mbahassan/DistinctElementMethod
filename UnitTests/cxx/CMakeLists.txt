@@ -2,7 +2,6 @@ set(EXE_NAME  main)
 
 set(SOURCES
         main.cpp
-        GpuClass.cu
 )
 
 #Make the exe
@@ -20,12 +19,7 @@ target_include_directories(${EXE_NAME}
 #All cpp folder and linked a
 target_link_libraries(${EXE_NAME}
         PUBLIC
-        Base
-        ContactDetection
-        Insertion
-        Output
-        Particle
-        TimeIntegrator
+        Simulation
         Tools
 )
 

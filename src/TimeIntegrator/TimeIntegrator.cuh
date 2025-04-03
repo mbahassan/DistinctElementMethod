@@ -5,8 +5,8 @@
 #ifndef TIME_INTEGRATOR_H
 #define TIME_INTEGRATOR_H
 
-#include "EulerIntegrator/EulerIntegrator.h"
-#include "VerletIntegrator/VerletIntegrator.h"
+#include "EulerIntegrator/EulerIntegrator.cuh"
+#include "VerletIntegrator/VerletIntegrator.cuh"
 
 enum Integrator
 {
@@ -19,11 +19,9 @@ template<typename ParticleType>
 class TimeIntegrator
 {
 public:
-    explicit TimeIntegrator(const Integrator method = Euler): method_(method) {
-    }
+    explicit TimeIntegrator(const Integrator method = Euler): method_(method) {}
 
-
-    void step(const std::vector<ParticleType> &particles, const double dt)
+    void integrate(std::vector<ParticleType> &particles, const double dt)
     {
         if (method_ == Euler)
         {

@@ -20,7 +20,7 @@ __global__ void eulerIntegratorKernel(ParticleType *particle, const int size_, c
   particle[idx].position += particle[idx].velocity * dt;
 
   // Update velocity
-  // particle[idx].velocity = particle[idx].force / particle[idx].mass *dt;
+  particle[idx].velocity = particle[idx].force / particle[idx].mass * dt;
 
   // Update Angular velocity
   // particle[idx].angularVel += particle[idx].torque / particle[idx].inertia * dt;

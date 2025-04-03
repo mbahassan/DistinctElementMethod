@@ -4,7 +4,10 @@
 
 #include "EPA.h"
 
-EPA::Triangle::Triangle(int a, int b, int c, const std::vector<float3>& vertices) {
+#include <Particle/Polyhedral.h>
+
+template<typename ParticleType>
+EPA<ParticleType>::Triangle::Triangle(int a, int b, int c, const std::vector<float3>& vertices) {
     indices[0] = a;
     indices[1] = b;
     indices[2] = c;
@@ -21,27 +24,32 @@ EPA::Triangle::Triangle(int a, int b, int c, const std::vector<float3>& vertices
     }
 }
 
-bool EPA::Triangle::isFrontFacing(const float3 &point, const std::vector<float3> &vertices) const{
+template<typename ParticleType>
+bool EPA<ParticleType>::Triangle::isFrontFacing(const float3 &point, const std::vector<float3> &vertices) const{
     return ((point - vertices[indices[0]]) & normal) > 0;
 }
 
-EPA::Edge::Edge(int a_, int b_) : a(a_), b(b_) {
+template<typename ParticleType>
+EPA<ParticleType>::Edge::Edge(int a_, int b_) : a(a_), b(b_) {
     if (a > b) std::swap(a, b);
 }
 
-bool EPA::Edge::operator==(const Edge& other) const {
+template<typename ParticleType>
+bool EPA<ParticleType>::Edge::operator==(const Edge& other) const {
     return a == other.a && b == other.b;
 }
 
-bool EPA::Edge::operator<(const Edge& other) const {
+template<typename ParticleType>
+bool EPA<ParticleType>::Edge::operator<(const Edge& other) const {
     return (a != other.a) ? (a < other.a) : (b < other.b);
 }
 
 
 // EPA implementation
-std::pair<float3, float> EPA::ePAlgorithm(
-    const Spherical &particleA,
-    const Spherical &particleB,
+template<typename ParticleType>
+std::pair<float3, float> EPA<ParticleType>::ePAlgorithm(
+    const ParticleType &particleA,
+    const ParticleType &particleB,
     Simplex &gjkSimplex) {
     // Initialize EPA polytope with GJK simplex
     std::vector<float3> polytope = gjkSimplex.getPoints();
@@ -165,13 +173,14 @@ std::pair<float3, float> EPA::ePAlgorithm(
     return std::make_pair(normal, penetrationDepth);
 }
 
-EPA::Contact EPA::computeContactEPA(
-    const Spherical &particleA,
-    const Spherical &particleB,
+template<typename ParticleType>
+Contact EPA<ParticleType>::computeContactEPA(
+    const ParticleType &particleA,
+    const ParticleType &particleB,
     Simplex &gjkSimplex) {
     Contact contact;
-    contact.pi = particleA;
-    contact.pj = particleB;
+    contact.pi = particleA.getId();
+    contact.pj = particleB.getId();
 
     // Use EPA to find penetration depth and normal
     auto epaResult = ePAlgorithm(particleA, particleB, gjkSimplex);
@@ -198,7 +207,8 @@ EPA::Contact EPA::computeContactEPA(
 
 
 // Support function for EPA - similar to GJK's support function
-float3 EPA::sATMB(const Spherical &particleA, const Spherical &particleB, const float3 &direction) {
+template<typename ParticleType>
+float3 EPA<ParticleType>::sATMB(const ParticleType &particleA, const ParticleType &particleB, const float3 &direction) {
     // Get the furthest point of particle A in direction
     float3 supportA = particleA.supportMapping(direction) + particleA.position;
 
@@ -208,3 +218,7 @@ float3 EPA::sATMB(const Spherical &particleA, const Spherical &particleB, const 
     // Return the Minkowski difference
     return supportA - supportB;
 }
+
+
+// At the end of EPA.cpp
+template Contact EPA<Polyhedral>::computeContactEPA(const Polyhedral& a, const Polyhedral& b, Simplex& simplex);

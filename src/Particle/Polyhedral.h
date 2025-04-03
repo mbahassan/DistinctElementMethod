@@ -54,12 +54,19 @@ public:
         return vertices[maxIdx];
     }
 
-    int id = -1 ;
+    void setId(const int id) {id_ = id;}
+
+    int getId() const {return id_;}
+
 
     Shape::ShapeType shapeType = Shape::POLYHEDRAL;
 
+    float volume = 0.0f;
+    float mass = 0.0f;
     float3 position {0.f, 0.f, 0.f};      // Position in 3D space
     float3 velocity {0.f, 0.f, 0.f};      // Velocity in 3D space
+    float3 force {0.f, 0.f, 0.f};         // Force in 3D space
+
     Quaternion orientation;
 
 
@@ -73,10 +80,12 @@ public:
     unsigned int numSolids   = 0;
     unsigned int numTriangles = 0;
 
-    float volume_ = 0.0f;
+
     BoundingBox<float3> boundingBox {};
 
 private:
+    int id_ = -1 ;
+
     /// Copy stl primitives
     void copy(const Polytope& polytope)
     {
@@ -85,7 +94,7 @@ private:
         numTriangles  = polytope.triangles.size() ;
         numSolids  = polytope.solids.size();
 
-        volume_ = polytope.volume_;
+        volume = polytope.volume_;
         boundingBox = {polytope.min_ , polytope.max_};
 
         vertices  = new float3[numVertices]();
@@ -97,6 +106,13 @@ private:
         std::ranges::copy(polytope.triangles, triangles);
         std::ranges::copy(polytope.normals, normals);
         std::ranges::copy(polytope.solids, solids);
+
+        computeMass();
+    }
+
+
+    void computeMass() {
+        mass = volume * getDensity();
     }
 };
 

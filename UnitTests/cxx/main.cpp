@@ -5,13 +5,13 @@
 // Required to include CUDA vector types
 #include <cuda_runtime.h>
 #include <ContactDetection/ContactDetection.cuh>
-#include <Output/Output.cuh>
-#include <Particle/Spherical.hpp>
-#include <Particle/Polyhedral.hpp>
+#include <Particle/Spherical.h>
+#include <Particle/Polyhedral.h>
 
 #include <Tools/Config/Parser.h>
 #include "Insertion/InsertionCpu.h"
 
+#include <Simulate/Simulate.cuh>
 
 int main(int argc, char **argv)
 {
@@ -24,39 +24,38 @@ int main(int argc, char **argv)
 
     Polytope cube("sphere.stl");
 
-
     std::vector<Polyhedral> poly(N);
 
     for(int i = 0; i < N; i++)
     {
+        poly[i].setId(i);
         poly[i] = Polyhedral(glass, cube);
-        poly[i].id = i;
     }
 
     std::vector<Spherical> particles(N);
     for(int i = 0; i < N; i++)
     {
-        particles[i] = Spherical(glass, sphere);
         particles[i].setId(i);
+        particles[i] = Spherical(glass, sphere);
         particles[i].setRadius(0.03f);
     }
 
     Insertion insertion;
     insertion.fillRandomly2D(poly, {0,0,0}, {2.,2.,0});
 
-    /// Remove unfilled positions from the particle vector
-    auto isPositionValid = [&](const Polyhedral& p){
-        return p.position.x == 0.0f && p.position.y == 0.0f && p.position.z == 0.0f;
-    };
-    std::erase_if(poly, isPositionValid);
+    /// Simulate
+    Simulate<Polyhedral> simulate(0.0001, LSD, Euler, "input.json");
+    simulate.addParticles(poly);
+    simulate.solve(3*0.0001);
 
-    ContactDetection<Polyhedral> cd("input.json");
-    auto potential_pairs = cd.broadPhase(poly);
-    auto actual_contacts = cd.narrowPhase(poly, potential_pairs);
+    // simulate.run(0.001);
+    // ContactDetection<Spherical> cd("input.json");
+    // auto potential_pairs = cd.broadPhase(particles);
+    // auto actual_contacts = cd.narrowPhase(particles, potential_pairs);
 
-    Output output("results");
-    output.writeParticles(particles, 0);
-    output.writeParticles(poly, 0);
+    // Output output("results");
+    // output.writeParticles(particles, 0);
+    // output.writeParticles(poly, 0);
     // output.writeTree(cd.getTree(),0);
 
     // std::cout << "particle radius: "<< particles[0].getRadius() << std::endl;
@@ -72,6 +71,7 @@ int main(int argc, char **argv)
     // profiled. Calling cudaDeviceReset causes all profile data to be
     // flushed before the application exits
 
-    cudaDeviceReset();
+    // cudaDeviceReset();
     // exit(bTestResult ? EXIT_SUCCESS : EXIT_FAILURE);
+    return 0;
 }

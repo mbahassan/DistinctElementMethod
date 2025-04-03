@@ -61,6 +61,18 @@ public:
     __host__ __device__
     ~Spherical() override = default;
 
+    float3 supportMapping(const float3 &direction) const
+    {
+        const float vecMag = mag(direction);
+        float3 s = {0.0f,0.0f,0.0f};
+
+        if (vecMag > 0.0f) {
+            s = normalize(direction) * getRadius();
+        }
+
+        return s;
+    }
+
     float3 position {0.f,0.f,0.f};      // Position in 3D space
 
     float3 velocity {0.f,0.f,0.f};      // Linear velocity

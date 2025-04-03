@@ -33,4 +33,13 @@ void hostToDevice(const T* hostPtr, const size_t size, T** devPtr)
     GET_CUDA_ERROR("cudaDeviceSynchronize() hostToDevice");
 }
 
+template<typename T>
+void deviceToHost(const T* devPtr,  const size_t size, T* hostPtr)
+{
+    cudaMemcpy(hostPtr, devPtr, size * sizeof(T), cudaMemcpyDeviceToHost);
+    GET_CUDA_ERROR("cudaMemcpy() deviceToHost");
+    cudaDeviceSynchronize();
+    GET_CUDA_ERROR("cudaDeviceSynchronize() deviceToHost");
+}
+
 #endif //CUDAHELPER_H

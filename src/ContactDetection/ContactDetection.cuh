@@ -12,21 +12,21 @@
 #include "ContactConfig.h"
 
 template<class ParticleType>
-class ContactDetection : ContactConfig
+class ContactDetection : public ContactConfig , public BroadPhase<ParticleType>
 {
 public:
-    explicit ContactDetection(const TreeType treeType): broadPhase_(treeType) {}
+    explicit ContactDetection(const TreeType treeType): BroadPhase<ParticleType>(treeType) {}
 
-    explicit ContactDetection(const std::string& path): broadPhase_(path) {}
+    explicit ContactDetection(const std::string& path): BroadPhase<ParticleType>(path){}
 
     // Run the complete contact detection pipeline
-    std::vector<EPA::Contact> detectContacts(std::vector<ParticleType>& particles) {
-
+    std::vector<Contact> detectContacts(std::vector<ParticleType>& particles)
+    {
         // Initialize the broad phase (build the spatial data structure)
-        broadPhase_.initialize(particles);
+        this->initialization(particles);
 
         // Run broad phase to get potential contacts
-        std::vector<PotentialContact> potentialContacts = broadPhase_.getPotentialContacts(particles);
+        std::vector<PotentialContact> potentialContacts = this->getPotentialContacts(particles);
 
         // Run narrow phase to get actual contacts
         return narrowPhase_.detectCollisions(particles, potentialContacts);
@@ -35,18 +35,18 @@ public:
     // You can also provide separate methods if needed
     std::vector<PotentialContact> broadPhase(std::vector<ParticleType>& particles)
     {
-        broadPhase_.initialize(particles);
-        return broadPhase_.getPotentialContacts(particles);
+        initialization(particles);
+        return getPotentialContacts(particles);
     }
 
-    std::vector<EPA::Contact> narrowPhase(
+    std::vector<Contact> narrowPhase(
         const std::vector<ParticleType>& particles,
         const std::vector<PotentialContact>& potentialContacts) {
         return narrowPhase_.detectCollisions(particles, potentialContacts);
     }
 
+
 private:
-    BroadPhase<ParticleType> broadPhase_;
 
     NarrowPhase narrowPhase_;
 };

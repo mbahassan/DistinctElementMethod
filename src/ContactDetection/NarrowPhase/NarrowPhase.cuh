@@ -11,27 +11,27 @@
 #include "ContactDetection/NarrowPhase/GJK/GJK.h"
 #include "ContactDetection/NarrowPhase/EPA/EPA.h"
 
-// Forward declaration to avoid circular dependency
-struct PotentialContact;
 
-class NarrowPhase {
+
+class NarrowPhase
+{
 public:
     NarrowPhase() = default;
 
     // Detect collisions using GJK + EPA
     template<typename ParticleType>
-    std::vector<EPA::Contact> detectCollisions(
+    std::vector<Contact> detectCollisions(
         const std::vector<ParticleType>& particles,
-        const std::vector<PotentialContact>& potentialContacts) {
+        const std::vector<PotentialContact>& pContacts) {
 
-        std::vector<EPA::Contact> contacts;
+        std::vector<Contact> contacts;
 
-        for (const auto& potentialContact : potentialContacts) {
-            const ParticleType& particleA = particles[potentialContact.particleIdI];
-            const ParticleType& particleB = particles[potentialContact.particleIdJ];
+        for (const auto& pContact : pContacts) {
+            const ParticleType& particleA = particles[pContact.particleIdI];
+            const ParticleType& particleB = particles[pContact.particleIdJ];
 
             // Skip if the particles are the same
-            if (particleA.id == particleB.id) {
+            if (particleA.getId() == particleB.getId()) {
                 continue;
             }
 
@@ -39,7 +39,7 @@ public:
             Simplex simplex;
             if (gjk.gjkOverlapWithSimplex(particleA, particleB, simplex)) {
                 // Use EPA to compute contact information
-                EPA::Contact contact = EPA::computeContactEPA(particleA, particleB, simplex);
+                Contact contact = EPA<ParticleType>::computeContactEPA(particleA, particleB, simplex);
                 contacts.push_back(contact);
             }
         }

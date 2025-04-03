@@ -7,37 +7,37 @@
 
 #include <vector>
 #include <limits>
-#include <algorithm>
 #include "Particle/Spherical.h"
 #include "ContactDetection/NarrowPhase/Simplex/Simplex.h"
 
+struct Contact
+{
+    int pi;
+    int pj;
+    float3 normal;
+    float3 contactPoint;
+    float penetrationDepth;
+};
 
-
-class EPA {
+template<typename ParticleType>
+class EPA
+{
 public:
-
-    struct Contact {
-        Spherical pi;
-        Spherical pj;
-        float3 normal;
-        float3 contactPoint;
-        float penetrationDepth;
-    };
 
     EPA() = default;
 
 
     // EPA implementation
     static std::pair<float3, float> ePAlgorithm(
-        const Spherical& particleA,
-        const Spherical& particleB,
+        const ParticleType& particleA,
+        const ParticleType& particleB,
         Simplex& gjkSimplex);
 
 
     // Updated contact computation for arbitrary shapes
     static Contact computeContactEPA(
-        const Spherical& particleA,
-        const Spherical& particleB,
+        const ParticleType& particleA,
+        const ParticleType& particleB,
         Simplex& gjkSimplex) ;
 
 private:
@@ -52,7 +52,8 @@ private:
         bool isFrontFacing(const float3& point, const std::vector<float3>& vertices) const;
     };
 
-    struct Edge {
+    struct Edge
+    {
         int a, b;
 
         Edge(int a_, int b_) ;
@@ -63,7 +64,7 @@ private:
     };
 
     // Support function for EPA - similar to GJK's support function
-    static float3 sATMB(const Spherical& particleA, const Spherical& particleB, const float3& direction);
+    static float3 sATMB(const ParticleType& particleA, const ParticleType& particleB, const float3& direction);
 };
 
 #endif // EPA_CUH

@@ -5,7 +5,7 @@
 #ifndef GPUCLASS_H
 #define GPUCLASS_H
 
-#include <Particle/Spherical.hpp>
+#include <Particle/Spherical.h>
 #include <Simulate/Base/Base.cuh>
 
 class GpuClass: public Base
