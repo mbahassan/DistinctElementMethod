@@ -55,11 +55,11 @@ public:
     __host__ __device__
     float getVolume() override {return 4.0f * radius_*radius_*radius_ / 3.0f;}
 
-    __host__ __device__
-    float3 supportMapping(const float3& direction) const
-    {
-        return normalize(direction) * radius_;
-    }
+    // __host__ __device__
+    // float3 supportMapping(const float3& direction) const
+    // {
+    //     return normalize(direction) * radius_;
+    // }
 
 
 private:

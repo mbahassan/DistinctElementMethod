@@ -11,21 +11,17 @@
 
 
 template<typename ParticleType>
-class EulerIntegrator: public Base
+class EulerIntegrator: public virtual Base<ParticleType>
 {
 public:
   EulerIntegrator() = default;
 
   ~EulerIntegrator()
   {
-    cudaFree(devParticle);
+    // cudaFree(this->devParticlesPtr_);
   }
 
-  void eulerStep(ParticleType* particlesHost, size_t particlesCount, float dt);
-
-
-private:
-  ParticleType* devParticle = nullptr;
+  void eulerStep(ParticleType* devParticlesPtr_, size_t particlesCount,  float dt);
 
 };
 

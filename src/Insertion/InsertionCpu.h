@@ -231,13 +231,13 @@ public:
                     particles[i].position = testPos;
 
                     // For non-spherical particles, initialize random orientation
-                    if (particles[i].shapeType != Shape::SPHERE) {
+                    if (particles[i].getShapeType() != Shape::SPHERE) {
                         particles[i].orientation = getRandomOrientation();
                     }
 
                     // Update bounding box after position is set
-                    particles[i].boundingBox.min + testPos; // Assuming this method exists
-                    particles[i].boundingBox.max + testPos; // Assuming this method exists
+                    particles[i].boundingBox.min +=  testPos; // Assuming this method exists
+                    particles[i].boundingBox.max +=  testPos; // Assuming this method exists
                     valid++;
                 }
 

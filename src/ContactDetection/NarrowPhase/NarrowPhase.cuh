@@ -11,7 +11,7 @@
 #include "ContactDetection/NarrowPhase/GJK/GJK.h"
 #include "ContactDetection/NarrowPhase/EPA/EPA.h"
 
-
+using PotentialContacts = std::vector<PotentialContact>;
 
 class NarrowPhase
 {
@@ -22,7 +22,7 @@ public:
     template<typename ParticleType>
     std::vector<Contact> detectCollisions(
         const std::vector<ParticleType>& particles,
-        const std::vector<PotentialContact>& pContacts) {
+        const PotentialContacts& pContacts) {
 
         std::vector<Contact> contacts;
 

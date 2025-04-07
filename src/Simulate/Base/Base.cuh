@@ -4,10 +4,13 @@
 
 #ifndef BASE_CUH
 #define BASE_CUH
+#include <Particle/Polyhedral.h>
+#include <Particle/Spherical.h>
 
 
-
-class Base {
+template<typename ParticleType>
+class Base
+{
 public:
     Base();
 
@@ -16,10 +19,16 @@ public:
     int threadsPerBlock = 1024;
 
     int numberOfBlocks = 256;
+
+    ParticleType* devParticlesPtr_ = nullptr;
+
 private:
+
     cudaDeviceProp deviceProperties{};
 };
 
 
+template class Base<Spherical>;
+template class Base<Polyhedral>;
 
 #endif //BASE_CUH

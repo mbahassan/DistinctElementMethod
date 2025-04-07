@@ -5,6 +5,8 @@
 #ifndef TIME_INTEGRATOR_H
 #define TIME_INTEGRATOR_H
 
+#include <Tools/CudaHelper.hpp>
+
 #include "EulerIntegrator/EulerIntegrator.cuh"
 #include "VerletIntegrator/VerletIntegrator.cuh"
 
@@ -16,32 +18,54 @@ enum Integrator
 
 
 template<typename ParticleType>
-class TimeIntegrator : public EulerIntegrator<ParticleType>
+class TimeIntegrator : public EulerIntegrator<ParticleType>, public VerletIntegrator<ParticleType>
 {
 public:
-    explicit TimeIntegrator(const Integrator method = Euler): method_(method) {}
+    explicit TimeIntegrator(const Integrator method = Euler): Base<ParticleType>(),
+                                                              method_(method) {
+    }
 
-    void integrate(std::vector<ParticleType> &particles, const double dt)
+    void integrate(std::vector<ParticleType>& particles, const double dt)
     {
+        // Time the integration
+        startTime = std::chrono::high_resolution_clock::now();
+
         size_t particlesCount = particles.size();
         ParticleType* particlesHost = particles.data();
+
+        // Copy particles vector to devParticles for the kernel
+        hostToDevice(particlesHost, particlesCount, &devParticlesPtr_);
+
         if (method_ == Euler)
         {
-            eulerIntegrator_ = std::make_unique<EulerIntegrator<ParticleType>>();
-            eulerIntegrator_->eulerStep(particlesHost, particlesCount, dt);
+            this->eulerStep(devParticlesPtr_, particlesCount, dt);
         } else if (method_ == Verlet)
         {
-            verletIntegrator_ = std::make_unique<VerletIntegrator<ParticleType>>();
-            verletIntegrator_->verletStep(particlesHost, particlesCount, dt);
+            this->verletStep(devParticlesPtr_, particlesCount, dt);
         }
+
+        // copy back to host
+        deviceToHost(devParticlesPtr_, particlesCount, particlesHost);
+
+        endTime = std::chrono::high_resolution_clock::now();
+        std::cout << "- Integrator Kernel() duration: " <<
+            std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() << std::endl;
+    }
+
+    ~TimeIntegrator()
+    {
+        cudaFree(devParticlesPtr_);
     }
 
 private:
-    std::unique_ptr<EulerIntegrator<ParticleType>> eulerIntegrator_;
-    std::unique_ptr<VerletIntegrator<ParticleType>> verletIntegrator_;
-    Integrator method_;
 
-    
+    std::chrono::high_resolution_clock::time_point startTime ;
+
+    std::chrono::high_resolution_clock::time_point endTime ;
+
+    ParticleType* devParticlesPtr_ = nullptr;
+
+    Integrator method_;
 };
 
 

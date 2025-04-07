@@ -12,17 +12,15 @@
 
 
 template<typename ParticleType>
-class VerletIntegrator: public Base
+class VerletIntegrator: public virtual Base<ParticleType>
 {
 public:
     VerletIntegrator() = default;
 
     ~VerletIntegrator();
 
-    void verletStep(ParticleType* particlesHost, size_t particlesCount, float dt);
+    void verletStep(ParticleType* devParticlesPtr_, size_t particlesCount, float dt);
 
-private:
-    ParticleType* devParticle = nullptr;
 };
 
 template class VerletIntegrator<Spherical>;

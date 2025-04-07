@@ -42,12 +42,12 @@ public:
     }
 
 
-    void initialization(ParticleType* particlesHost, size_t particlesCount)
+    void initialization(std::vector<ParticleType>& particles)
     {
         if (treeType_ == Quadtree)
         {
-            // size_t particlesCount = particles.size();
-            // ParticleType* particlesHost = particles.data();
+            size_t particlesCount = particles.size();
+            ParticleType* particlesHost = particles.data();
             std::cout << "\nContact Detection BroadPhase: \n";
 
             ParticleType* particlesDevice;

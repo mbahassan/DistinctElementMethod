@@ -11,7 +11,8 @@
 #include "Tools/StlReader/StlReader.h"
 #include "Tools/quaternion/quaternion.hpp"
 
-class Polytope : public Shape {
+class Polytope : public Shape
+{
 public:
     std::vector<float3> vertices;
     std::vector<int3> triangles;

@@ -15,7 +15,7 @@ int main(int argc, char **argv)
     auto config = Parser::getConfig("input.json");
     int N = config.numberOfParticles;
 
-    Sphere sphere(0.1);
+    Sphere sphere(0.03f);
     Material glass(config.materialPath);
 
     Polytope cube("sphere.stl");
@@ -40,8 +40,9 @@ int main(int argc, char **argv)
     insertion.fillRandomly2D(poly, {0,0,0}, {2.,2.,0});
 
     /// Simulate
-    Simulate<Polyhedral> simulate(0.0001, LSD, Euler, "input.json");
+    Simulate<Polyhedral> simulate(0.01, LSD, Euler, "input.json");
     simulate.addParticles(poly);
+    simulate.setGravity({0.f,-9.81, 0.f});
     simulate.solve(0.3);
 
     return 0;

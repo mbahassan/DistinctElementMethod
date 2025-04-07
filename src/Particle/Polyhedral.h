@@ -58,8 +58,9 @@ public:
 
     int getId() const {return id_;}
 
+    Shape::ShapeType getShapeType() const {return shapeType;}
 
-    Shape::ShapeType shapeType = Shape::POLYHEDRAL;
+
 
     float volume = 0.0f;
     float mass = 0.0f;
@@ -84,7 +85,9 @@ public:
     BoundingBox<float3> boundingBox {};
 
 private:
-    int id_ = -1 ;
+    int id_ = 0 ;
+
+    Shape::ShapeType shapeType = Shape::POLYHEDRAL;
 
     /// Copy stl primitives
     void copy(const Polytope& polytope)
@@ -111,7 +114,8 @@ private:
     }
 
 
-    void computeMass() {
+    void computeMass()
+    {
         mass = volume * getDensity();
     }
 };

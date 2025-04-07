@@ -16,14 +16,16 @@ __global__ void eulerIntegratorKernel(ParticleType *particle, const int size_, c
   size_t idx = blockDim.x * blockIdx.x + threadIdx.x;
   if (idx >= size_) return;
 
+  // Update velocity
+  particle[idx].velocity += particle[idx].force / particle[idx].mass * dt;
+
   // Update position
   particle[idx].position += particle[idx].velocity * dt;
 
-  // Update velocity
-  particle[idx].velocity = particle[idx].force / particle[idx].mass * dt;
-
   // Update Angular velocity
   // particle[idx].angularVel += particle[idx].torque / particle[idx].inertia * dt;
+
+
 }
 
 #endif //EULER_INTEGRATOR_KERNEL_CUH

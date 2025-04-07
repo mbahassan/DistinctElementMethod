@@ -5,14 +5,17 @@
 #include "Base.cuh"
 #include <cstdio>
 
-Base::Base() {
+template<typename ParticleType>
+Base<ParticleType>::Base()
+{
     int deviceId = 0;
     cudaGetDeviceProperties(&deviceProperties, deviceId);
 
     threadsPerBlock = deviceProperties.maxThreadsPerBlock;
 }
 
-void Base::printDeviceInfo() const
+template<typename ParticleType>
+void Base<ParticleType>::printDeviceInfo() const
 {
     printf("Warp size:                                     %d\n",
        deviceProperties.warpSize);

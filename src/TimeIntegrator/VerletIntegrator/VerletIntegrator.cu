@@ -8,32 +8,32 @@
 template<typename ParticleType>
 VerletIntegrator<ParticleType>::~VerletIntegrator()
 {
-    cudaFree(devParticle);
+    // cudaFree(devParticle);
 }
 
 
 template<typename ParticleType>
-void VerletIntegrator<ParticleType>::verletStep(ParticleType* particlesHost,size_t particlesCount, const float dt)
+void VerletIntegrator<ParticleType>::verletStep(ParticleType* devParticlesPtr_, size_t particlesCount, const float dt)
 {
 //    size_t particlesCount = particles.size();
 //    ParticleType* particlesHost = particles.data();
-    std::cout << "Verlet Integrator() " << particlesCount << " particles\n";
+    std::cout << "- Integrator: Verlet\n";
 
 
-    hostToDevice(particlesHost, particlesCount, &devParticle);
+    // hostToDevice(particlesHost, particlesCount, &devParticle);
 
     auto startTime = std::chrono::high_resolution_clock::now();
 
     // Run Euler Integrator kernel
-    verletIntegratorKernel<<<10, threadsPerBlock>>>(devParticle, particlesCount, dt);
-    GET_CUDA_ERROR("VerletIntegratorKernelError");
+    verletIntegratorKernel<<<10, this->threadsPerBlock>>>(devParticlesPtr_, particlesCount, dt);
+    GET_CUDA_ERROR("Verlet Integrator Kernel Error");
 
     cudaDeviceSynchronize();
-    GET_CUDA_ERROR("VerletIntegratorKernelSyncError");
+    GET_CUDA_ERROR("Verlet Integrator Kernel Sync Error");
 
-    auto endTime = std::chrono::high_resolution_clock::now();
-    std::cout << "Verlet Integrator Kernel() duration: " <<
-        (std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count()) << std::endl;
+    // auto endTime = std::chrono::high_resolution_clock::now();
+    // std::cout << "Verlet Integrator Kernel() duration: " <<
+        // (std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count()) << std::endl;
 
-    deviceToHost(devParticle, particlesCount, particlesHost);
+    // deviceToHost(devParticle, particlesCount, particlesHost);
 }

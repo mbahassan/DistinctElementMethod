@@ -222,3 +222,4 @@ float3 EPA<ParticleType>::sATMB(const ParticleType &particleA, const ParticleTyp
 
 // At the end of EPA.cpp
 template Contact EPA<Polyhedral>::computeContactEPA(const Polyhedral& a, const Polyhedral& b, Simplex& simplex);
+template Contact EPA<Spherical>::computeContactEPA(const Spherical& a, const Spherical& b, Simplex& simplex);
