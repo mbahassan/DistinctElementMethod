@@ -13,7 +13,8 @@
 class Output {
 public:
     Output(const std::string& dir):
-    output_dir(dir) {
+    output_dir(dir)
+    {
         // Ensure output directory exists
         std::filesystem::create_directories(dir);
     }

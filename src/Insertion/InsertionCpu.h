@@ -184,16 +184,18 @@ public:
         const size_t numParticles = particles.size();
 
         int valid = 0;
-        for (int i = 0; i < numParticles; ++i) {
+        for (int i = 0; i < numParticles; ++i)
+        {
             bool validPosition = false;
             int attempts = 0;
 
             // Get current particle's bounding box size for spacing calculation
-            auto ithParticleBBox = particles[i].boundingBox;
-            float3 currentSize = ithParticleBBox.getSize();
-            float currentRadius = std::max(std::max(currentSize.x, currentSize.y), currentSize.z) * 0.5f;
+            auto iBBox = particles[i].boundingBox;
+            float3 iSize = iBBox.getSize();
+            float iRadius = std::max(std::max(iSize.x, iSize.y), iSize.z) * 0.5f;
 
-            while (!validPosition && attempts < maxAttempts) {
+            while (!validPosition && attempts < maxAttempts)
+            {
                 float testX = distX(gen);
                 float testY = distY(gen);
                 float3 testPos = make_float3(testX, testY, regionMin.z); // Fixed Z plane
@@ -201,50 +203,69 @@ public:
                 validPosition = true;
 
                 // Check distance from all already placed particles
-                for (int j = 0; j < valid; ++j) {
+                for (int j = 0; j < valid; ++j)
+                {
                     float3 diff = testPos - particles[j].position;
-                    float distance = sqrtf(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
+                    float distance = mag(diff);
 
                     // Calculate minimum spacing between these two specific particles
-                    auto jthParticleBBox = particles[j].boundingBox;
-                    float3 otherSize = jthParticleBBox.getSize();
-                    float otherRadius = std::max(std::max(otherSize.x, otherSize.y), otherSize.z) * 0.5f;
+                    auto jBBox = particles[j].boundingBox;
+                    float3 jSize = jBBox.getSize();
+                    float jRadius = std::max(std::max(jSize.x, jSize.y), jSize.z) * 0.5f;
 
                     // Minimum distance should be sum of radii plus a small buffer (5%)
-                    float minSpacing = (currentRadius + otherRadius) * 1.05f;
+                    float minSpacing = (iRadius + jRadius) * 1.05f;
 
-                    if (distance < minSpacing) {
+                    if (distance < minSpacing)
+                    {
                         validPosition = false;
                         break;
                     }
 
                     // Also check if this placement would put us outside the region
-                    if (testX - currentRadius < regionMin.x || testX + currentRadius > regionMax.x ||
-                        testY - currentRadius < regionMin.y || testY + currentRadius > regionMax.y)
+                    if (testX - iRadius < regionMin.x || testX + iRadius > regionMax.x ||
+                        testY - iRadius < regionMin.y || testY + iRadius > regionMax.y)
                     {
                         validPosition = false;
                         break;
                     }
                 }
 
-                if (validPosition) {
+                if (validPosition)
+                {
+                    /// Set the position
                     particles[i].position = testPos;
 
+                    /// Update bounding box after position is set
+                    particles[i].boundingBox.min +=  testPos;
+                    particles[i].boundingBox.max +=  testPos;
+
+
                     // For non-spherical particles, initialize random orientation
-                    if (particles[i].getShapeType() != Shape::SPHERE) {
-                        particles[i].orientation = getRandomOrientation();
+                    if (particles[i].getShapeType() != Shape::SPHERE)
+                    {
+                        particles[i].orientation = getRandomOrientation2D();
+
+                        /// update verticies position
+                        for (int n = 0; n < particles[i].numVertices; ++n)
+                        {
+                            particles[i].vertices[n] += particles[i].position;
+                        }
+
+                        ///\todo: update the verticies orientation as well
+                        //
                     }
 
-                    // Update bounding box after position is set
-                    particles[i].boundingBox.min +=  testPos; // Assuming this method exists
-                    particles[i].boundingBox.max +=  testPos; // Assuming this method exists
+
+
                     valid++;
                 }
 
                 attempts++;
             }
 
-            if (attempts >= maxAttempts) {
+            if (attempts >= maxAttempts)
+            {
                 std::cerr << "Warning: Could not place particle " << i
                           << " after " << maxAttempts << " attempts. "
                           << "Successfully placed " << valid << " out of " << numParticles << std::endl;
@@ -281,6 +302,23 @@ private:
         float z = sqrtf(u1) * cosf(2.0f * M_PI * u3);
 
         return {w, x, y, z};
+    }
+
+    static Quaternion getRandomOrientation2D()
+    {
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<float> angleDist(0.0f, 2.0f * M_PI);
+
+        // Random angle in radians for rotation around Z-axis
+        float theta = angleDist(gen);
+
+        float w = std::cos(theta / 2.0f);
+        float x = 0.0f;
+        float y = 0.0f;
+        float z = std::sin(theta / 2.0f);
+
+        return {w, x, y, z};  // This is a 2D rotation quaternion
     }
 };
 

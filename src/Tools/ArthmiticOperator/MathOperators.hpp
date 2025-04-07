@@ -115,7 +115,7 @@ __host__ __device__ inline bool operator>=(const float3& a, const float3& b) {
 }
 
 __host__ __device__ inline float mag(const float3& a) {
-    return sqrt(magSquared(a));
+    return sqrtf(magSquared(a));
 }
 
 __host__ __device__ inline float3 normalize(const float3& vec) {

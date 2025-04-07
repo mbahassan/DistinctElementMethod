@@ -57,7 +57,15 @@ public:
             for (size_t i = 0; i < raw_vertices.size(); i += 3)
             {
                 float3 p = {raw_vertices[i], raw_vertices[i+1], raw_vertices[i+2]};
+                position += p;
                 vertices.push_back(p);
+            }
+            position /= static_cast<float>(raw_vertices.size());
+
+            // translate it to center 0,0,0,
+            for (auto& v :vertices)
+            {
+                v -= position;
             }
 
             // Convert raw triangles to int3
@@ -104,19 +112,73 @@ private:
     std::vector<float> raw_vertices;
     std::vector<int> raw_triangles;
     std::vector<float> raw_normals;
+    float3 position {0.f,0.0f,0.f};
 
     void calculateVolume() {
         volume_ = 0.0f;
-        for (const auto& tri : triangles) {
-            const float3& v0 = vertices[tri.x];
-            const float3& v1 = vertices[tri.y];
-            const float3& v2 = vertices[tri.z];
+        const float epsilon = 1e-6f;
 
-            volume_ += (v0.x * (v1.y * v2.z - v1.z * v2.y) +
-                       v0.y * (v1.z * v2.x - v1.x * v2.z) +
-                       v0.z * (v1.x * v2.y - v1.y * v2.x)) / 6.0f;
+        // First pass: check if the object is approximately 2D
+        bool is_2d = true;
+
+        // Determine which axis might be constant (if any)
+        float min_x = std::numeric_limits<float>::max(), max_x = std::numeric_limits<float>::lowest();
+        float min_y = std::numeric_limits<float>::max(), max_y = std::numeric_limits<float>::lowest();
+        float min_z = std::numeric_limits<float>::max(), max_z = std::numeric_limits<float>::lowest();
+
+        for (const auto& v : vertices) {
+            min_x = std::min(min_x, v.x); max_x = std::max(max_x, v.x);
+            min_y = std::min(min_y, v.y); max_y = std::max(max_y, v.y);
+            min_z = std::min(min_z, v.z); max_z = std::max(max_z, v.z);
         }
-        volume_ = std::fabs(volume_);
+
+        float x_range = max_x - min_x;
+        float y_range = max_y - min_y;
+        float z_range = max_z - min_z;
+
+        // If any dimension is very small compared to others, the object is likely 2D
+        if (z_range < epsilon * std::max(x_range, y_range) ||
+            y_range < epsilon * std::max(x_range, z_range) ||
+            x_range < epsilon * std::max(y_range, z_range)) {
+            is_2d = true;
+            } else {
+                is_2d = false;
+            }
+
+        // If it's 2D, calculate area
+        if (is_2d)
+        {
+            for (const auto& tri : triangles)
+            {
+                const float3& v0 = vertices[tri.x];
+                const float3& v1 = vertices[tri.y];
+                const float3& v2 = vertices[tri.z];
+
+                // Calculate normal vector via cross product
+                float nx = (v1.y - v0.y) * (v2.z - v0.z) - (v1.z - v0.z) * (v2.y - v0.y);
+                float ny = (v1.z - v0.z) * (v2.x - v0.x) - (v1.x - v0.x) * (v2.z - v0.z);
+                float nz = (v1.x - v0.x) * (v2.y - v0.y) - (v1.y - v0.y) * (v2.x - v0.x);
+
+                // Find magnitude of normal vector
+                float normal_length = std::sqrt(nx*nx + ny*ny + nz*nz);
+
+                // Area of triangle is half the length of the cross product
+                volume_ += 0.5f * normal_length;
+            }
+        } else
+        {
+            for (const auto& tri : triangles)
+            {
+                const float3& v0 = vertices[tri.x];
+                const float3& v1 = vertices[tri.y];
+                const float3& v2 = vertices[tri.z];
+
+                volume_ += (v0.x * (v1.y * v2.z - v1.z * v2.y) +
+                           v0.y * (v1.z * v2.x - v1.x * v2.z) +
+                           v0.z * (v1.x * v2.y - v1.y * v2.x)) / 6.0f;
+            }
+            volume_ = std::fabs(volume_);
+        }
     }
 
     void calculateMinMax() {
