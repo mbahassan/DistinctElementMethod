@@ -236,11 +236,6 @@ public:
                     /// Set the position
                     particles[i].position = testPos;
 
-                    /// Update bounding box after position is set
-                    particles[i].boundingBox.min +=  testPos;
-                    particles[i].boundingBox.max +=  testPos;
-
-
                     // For non-spherical particles, initialize random orientation
                     if (particles[i].getShapeType() != Shape::SPHERE)
                     {
@@ -249,11 +244,22 @@ public:
                         /// update verticies position
                         for (int n = 0; n < particles[i].numVertices; ++n)
                         {
+                            ///\todo: update the verticies orientation
+                            // get the orientation
+                            const Quaternion& q = particles[i].orientation;
+
+                            // update vertex it to vertex
+                            particles[i].vertices[n] = q.rotateVector(particles[i].vertices[n]);
+
                             particles[i].vertices[n] += particles[i].position;
                         }
 
-                        ///\todo: update the verticies orientation as well
-                        //
+
+
+                        /// Update bounding box after position is set
+                        particles[i].boundingBox.min +=  testPos;
+                        particles[i].boundingBox.max +=  testPos;
+
                     }
 
 

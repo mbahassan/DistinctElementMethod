@@ -162,9 +162,9 @@ void Output::writeParticles(const std::vector<Polyhedral> &particles, const int 
             float3 transformedVertex = rotatedVertex + particle.position;
 
             vtpFile << "          "
-                    << transformedVertex.x << " "
-                    << transformedVertex.y << " "
-                    << transformedVertex.z << "\n";
+                    << v.x << " "
+                    << v.y << " "
+                    << v.z << "\n";
         }
     }
 

@@ -18,6 +18,7 @@ int main(int argc, char **argv)
     Sphere sphere(0.03f);
     Material glass(config.materialPath);
 
+
     Polytope cube("rectangle.stl");
 
     std::vector<Polyhedral> poly(N);
