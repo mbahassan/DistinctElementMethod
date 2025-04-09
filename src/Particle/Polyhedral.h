@@ -58,13 +58,31 @@ public:
 
     int getId() const {return id_;}
 
-    Shape::ShapeType getShapeType() const {return shapeType;}
+    [[nodiscard]] Shape::ShapeType getShapeType() const {return shapeType;}
 
+    void updateBoundingBox()
+    {
+        // Initialize with first vertex
+        boundingBox.min = vertices[0];
+        boundingBox.max = vertices[0];
 
+        // Find min/max for each dimension
+        for (int i = 1; i < numVertices; ++i) {
+            const float3& v = vertices[i];
+
+            boundingBox.min.x = std::min(boundingBox.min.x, v.x);
+            boundingBox.min.y = std::min(boundingBox.min.y, v.y);
+            boundingBox.min.z = std::min(boundingBox.min.z, v.z);
+
+            boundingBox.max.x = std::max(boundingBox.max.x, v.x);
+            boundingBox.max.y = std::max(boundingBox.max.y, v.y);
+            boundingBox.max.z = std::max(boundingBox.max.z, v.z);
+        }
+    }
 
     float volume = 0.0f;
     float mass = 0.0f;
-    float3 position = {0.f, 0.f, 0.f};      // Position in 3D space
+    float3 position = {-1.f, -1.f, -1.f};      // Position in 3D space
     float3 velocity = {0.f, 0.f, 0.f};      // Velocity in 3D space
     float3 force = {0.f, 0.f, 0.f};         // Force in 3D space
     float3 torque = {0.f,0.f,0.f};

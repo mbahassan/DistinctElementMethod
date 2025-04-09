@@ -95,6 +95,20 @@ public:
 
     BoundingBox<float3> boundingBox {};
 
+    void updateBoundingBox()
+    {
+        const float radius = getRadius();
+        boundingBox.min = make_float3(
+            position.x - radius,
+            position.y - radius,
+            position.z - radius
+        );
+        boundingBox.max = make_float3(
+            position.x + radius,
+            position.y + radius,
+            position.z + radius
+        );
+    }
 private:
 
     __host__ __device__

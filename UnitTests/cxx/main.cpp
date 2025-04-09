@@ -15,11 +15,17 @@ int main(int argc, char **argv)
     auto config = Parser::getConfig("input.json");
     int N = config.numberOfParticles;
 
+    Domain domain({0.f,0.f,0.f}, {2.f,2.f,2.f});
+
+    CubeRegion region(domain);
+    region.setMin({0.f,0.f,0.f});
+    region.setMax({2.f,2.f,2.f});
+
     Sphere sphere(0.03f);
     Material glass(config.materialPath);
 
 
-    Polytope cube("rectangle.stl");
+    Polytope cube("sphere0.03R2D.stl");
 
     std::vector<Polyhedral> poly(N);
 
@@ -37,8 +43,8 @@ int main(int argc, char **argv)
         particles[i].setRadius(0.03f);
     }
 
-    Insertion insertion;
-    insertion.fillRandomly2D(poly, {0,0,0}, {2.,2.,0});
+    Insertion insertion(domain);
+    insertion.fillRandomly2D(poly);
 
     /// Simulate
     Simulate<Polyhedral> simulate(0.01, LSD, Euler, "input.json");

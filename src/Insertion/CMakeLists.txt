@@ -1,6 +1,12 @@
 set(LIB_NAME Insertion)
 
 set(SOURCES
+        Domain/Domain.cpp
+
+        Regions/InsertionRegion.cpp
+        Regions/CubeInsertionRegion.cpp
+        Regions/CylindricalRegion.cpp
+
         InsertionCpu.cpp
         InsertionCpu.h
 )
